@@ -362,7 +362,7 @@ function weekStats(row, from, to) {
 
 // ─── Aggregaties ─────────────────────────────────────────────────────────────
 function buildLeerjaarData() {
-  const ja = allRows.filter(r => r.pakketgroep === 'ja' && r.leerjaar > 0);
+  const ja = allRows.filter(r => r.leerjaar > 0);
   const ljs = {};
   ja.forEach(r => {
     const ws = weekStats(r, wkFrom, wkTo);
@@ -387,7 +387,7 @@ function buildLeerjaarData() {
 
 function buildVakDataForLeerjaar(leerjaar) {
   const map = {};
-  allRows.filter(r => r.pakketgroep === 'ja' && r.leerjaar === leerjaar).forEach(r => {
+  allRows.filter(r => r.leerjaar === leerjaar).forEach(r => {
     const naam = VAKKEN[r.vak] || r.vak;
     if (!map[naam]) map[naam] = { naam, geroosterd: 0, gegeven: 0 };
     const ws = weekStats(r, wkFrom, wkTo);
@@ -402,7 +402,7 @@ function buildVakDataForLeerjaar(leerjaar) {
 
 function buildAllVakData() {
   const map = {};
-  allRows.filter(r => r.pakketgroep === 'ja' && r.leerjaar > 0).forEach(r => {
+  allRows.filter(r => r.leerjaar > 0).forEach(r => {
     const naam = VAKKEN[r.vak] || r.vak;
     const key  = `${r.leerjaar}__${naam}`;
     if (!map[key]) map[key] = { naam, lj: r.leerjaar, geroosterd: 0, gegeven: 0 };
@@ -420,7 +420,7 @@ function buildAllVakData() {
 function buildLesgroepData(leerjaar, vaknaam) {
   const map = {};
   allRows.filter(r => {
-    if (r.pakketgroep !== 'nee') return false;
+    if (!r.lesgroep) return false;
     if (r.leerjaar !== leerjaar) return false;
     return (VAKKEN[r.vak] || r.vak) === vaknaam;
   }).forEach(r => {
@@ -625,7 +625,7 @@ function renderOverview(dash) {
   // Footer
   const totG   = ljNrs.reduce((s, lj) => s + ljs[lj].geroosterd, 0);
   const totGeg = ljNrs.reduce((s, lj) => s + ljs[lj].gegeven, 0);
-  html += `<div class="footer-note">Bron: Zermelo-export · ${allRows.filter(r=>r.pakketgroep==='ja').length} pakketrijen · Totaal geroosterd: ${totG.toLocaleString('nl')} · Gegeven: ${totGeg.toLocaleString('nl')}</div>`;
+  html += `<div class="footer-note">Bron: Zermelo-export · ${allRows.filter(r=>r.leerjaar>0).length} rijen · Totaal geroosterd: ${totG.toLocaleString('nl')} · Gegeven: ${totGeg.toLocaleString('nl')}</div>`;
 
   dash.innerHTML = html;
 
