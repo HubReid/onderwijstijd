@@ -340,27 +340,35 @@ function parseCSV(text) {
     if (f.length < 18) continue;
     const afd = f[0];
     const lj  = parseInt(afd.match(/^(\d)/)?.[1]) || 0;
+    const wv  = f.slice(18).map(v => v === '' ? null : (parseInt(v) || 0));
     rows.push({
       afdeling: afd, leerjaar: lj,
       pakketgroep: f[1], vak: f[2], lesgroep: f[3],
-      weekVals: f.slice(18).map(v => v === '' ? null : (parseInt(v) || 0))
+      raw_geroosterd: parseInt(f[5]) || 0,
+      total_non_null: wv.filter(v => v !== null).length,
+      weekVals: wv
     });
   }
   return { rows, weekMeta };
 }
 
 // ─── Week stats ──────────────────────────────────────────────────────────────
+// Gebruikt raw_geroosterd (uit CSV) proportioneel voor het gekozen weekbereik.
+// gegeven = som van weekwaarden (echte lesslots), niet binair per week.
 function weekStats(row, from, to) {
-  let ger = 0, geg = 0, uit = 0;
-  const v = row.weekVals;
+  let non_null_in_range = 0, geg_sum = 0;
+  const v   = row.weekVals;
   const end = Math.min(to, v.length - 1);
   for (let i = Math.max(0, from); i <= end; i++) {
     if (v[i] !== null) {
-      ger++;
-      if (v[i] > 0) geg++; else uit++;
+      non_null_in_range++;
+      geg_sum += v[i];
     }
   }
-  return { geroosterd: ger, gegeven: geg, uitgevallen: uit };
+  const ger = row.total_non_null > 0
+    ? Math.round(row.raw_geroosterd * non_null_in_range / row.total_non_null)
+    : 0;
+  return { geroosterd: ger, gegeven: geg_sum, uitgevallen: Math.max(0, ger - geg_sum) };
 }
 
 // ─── Aggregaties ─────────────────────────────────────────────────────────────
@@ -378,10 +386,11 @@ function buildLeerjaarData() {
     d.geroosterd  += ws.geroosterd;
     d.gegeven     += ws.gegeven;
     d.uitgevallen += ws.uitgevallen;
+    const ger_per_week = r.total_non_null > 0 ? r.raw_geroosterd / r.total_non_null : 0;
     r.weekVals.forEach((v, i) => {
       if (i >= wkFrom && i <= wkTo && v !== null) {
-        d.wkGer[i]++;
-        d.wkGeg[i] += v > 0 ? 1 : 0;
+        d.wkGer[i] += ger_per_week;
+        d.wkGeg[i] += v;
       }
     });
   });
@@ -438,10 +447,11 @@ function buildLesgroepData(leerjaar, vaknaam) {
     const ws = weekStats(r, wkFrom, wkTo);
     d.geroosterd += ws.geroosterd;
     d.gegeven    += ws.gegeven;
+    const ger_per_week = r.total_non_null > 0 ? r.raw_geroosterd / r.total_non_null : 0;
     r.weekVals.forEach((v, i) => {
       if (i >= wkFrom && i <= wkTo && v !== null) {
-        d.wkGer[i]++;
-        d.wkGeg[i] += v > 0 ? 1 : 0;
+        d.wkGer[i] += ger_per_week;
+        d.wkGeg[i] += v;
       }
     });
   });
