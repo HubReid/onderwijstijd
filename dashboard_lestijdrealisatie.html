@@ -220,6 +220,13 @@
     /* Footer */
     .footer-note { font-size: 0.75rem; color: #aaa; margin-top: 24px; padding-bottom: 32px; }
 
+    /* Uitvalredenen */
+    .reden-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin: 8px 0 12px; background: #f0f0f0; }
+    .reden-segment { height: 100%; }
+    .reden-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.75rem; color: #555; }
+    .reden-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+    .reden-badge { display: inline-block; font-size: 0.68rem; padding: 2px 7px; border-radius: 10px; font-weight: 500; white-space: nowrap; }
+
     /* New file button */
     .new-file-btn {
       position: fixed; bottom: 20px; right: 20px;
@@ -311,6 +318,51 @@ const LJ_KLEUREN = ['#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2']
 const EXCLUDE_VAKKEN = new Set(['kralg','krlz','krmrt']);
 function isExcluded(vak) { return EXCLUDE_VAKKEN.has(vak); }
 
+// ─── Kleur gradaties (0% uitval = groen, 100% uitval = rood) ─────────────────
+function gradColor(uitvalFrac) {
+  const hue = Math.round(120 * (1 - Math.min(1, uitvalFrac)));
+  return `hsl(${hue}, 65%, 38%)`;
+}
+function gradBg(uitvalFrac) {
+  const hue = Math.round(120 * (1 - Math.min(1, uitvalFrac)));
+  return `hsl(${hue}, 75%, 92%)`;
+}
+
+// ─── Voornaamste uitvalreden ──────────────────────────────────────────────────
+function dominantReden(d) {
+  const cats = [
+    { label: 'Te weinig lln.',   color: '#d97706', val: d.uitval_ll    },
+    { label: 'Te weinig doc.',   color: '#dc2626', val: d.uitval_doc   },
+    { label: 'Gewijzigde plan.', color: '#2563eb', val: d.uitval_plan  },
+    { label: 'Zonder reden',     color: '#7c3aed', val: d.uitval_reden }
+  ];
+  const total = cats.reduce((s, c) => s + c.val, 0);
+  if (total === 0) return null;
+  const best = cats.reduce((a, b) => b.val > a.val ? b : a);
+  return { ...best, total };
+}
+
+// ─── Uitvalredenen panel ──────────────────────────────────────────────────────
+function renderRedenPanel(d) {
+  const { uitval_ll: ll, uitval_doc: doc, uitval_plan: plan, uitval_reden: reden } = d;
+  const total = ll + doc + plan + reden;
+  if (total === 0) return '<div style="font-size:0.8rem;color:#aaa">Geen uitvalredenen geregistreerd</div>';
+  const pct = x => total > 0 ? Math.round(x / total * 100) : 0;
+  const seg = (val, color) => val > 0
+    ? `<div class="reden-segment" style="width:${pct(val)}%;background:${color}"></div>` : '';
+  return `
+    <div class="reden-bar">
+      ${seg(ll,'#d97706')}${seg(doc,'#dc2626')}${seg(plan,'#2563eb')}${seg(reden,'#7c3aed')}
+    </div>
+    <div class="reden-legend">
+      <span><span class="reden-dot" style="background:#d97706"></span>Te weinig leerlingen: ${ll} (${pct(ll)}%)</span>
+      <span><span class="reden-dot" style="background:#dc2626"></span>Te weinig docenten: ${doc} (${pct(doc)}%)</span>
+      <span><span class="reden-dot" style="background:#2563eb"></span>Gewijzigde planning: ${plan} (${pct(plan)}%)</span>
+      <span><span class="reden-dot" style="background:#7c3aed"></span>Zonder reden: ${reden} (${pct(reden)}%)</span>
+    </div>
+    <div style="font-size:0.7rem;color:#bbb;margin-top:10px">Jaartotalen — niet beïnvloed door weekfilter</div>`;
+}
+
 // ─── State ───────────────────────────────────────────────────────────────────
 let allRows     = null;
 let allWeekMeta = null;
@@ -346,7 +398,11 @@ function parseCSV(text) {
       pakketgroep: f[1], vak: f[2], lesgroep: f[3],
       raw_geroosterd: parseInt(f[5]) || 0,
       total_non_null: wv.filter(v => v !== null).length,
-      weekVals: wv
+      weekVals: wv,
+      uitval_ll:    parseInt(f[12]) || 0,
+      uitval_doc:   parseInt(f[13]) || 0,
+      uitval_plan:  parseInt(f[14]) || 0,
+      uitval_reden: parseInt(f[15]) || 0
     });
   }
   return { rows, weekMeta };
@@ -401,13 +457,21 @@ function buildVakDataForLeerjaar(leerjaar) {
   const map = {};
   allRows.filter(r => r.leerjaar === leerjaar && r.lesgroep && !isExcluded(r.vak)).forEach(r => {
     const naam = VAKKEN[r.vak] || r.vak;
-    if (!map[naam]) map[naam] = { naam, geroosterd: 0, gegeven: 0 };
+    if (!map[naam]) map[naam] = { naam, geroosterd: 0, gegeven: 0, uitval_ll: 0, uitval_doc: 0, uitval_plan: 0, uitval_reden: 0 };
     const ws = weekStats(r, wkFrom, wkTo);
-    map[naam].geroosterd += ws.geroosterd;
-    map[naam].gegeven    += ws.gegeven;
+    map[naam].geroosterd   += ws.geroosterd;
+    map[naam].gegeven      += ws.gegeven;
+    map[naam].uitval_ll    += r.uitval_ll;
+    map[naam].uitval_doc   += r.uitval_doc;
+    map[naam].uitval_plan  += r.uitval_plan;
+    map[naam].uitval_reden += r.uitval_reden;
   });
   return Object.values(map)
-    .map(v => ({ ...v, uitval: v.geroosterd > 0 ? (v.geroosterd - v.gegeven) / v.geroosterd : 0 }))
+    .map(v => ({
+      ...v,
+      uitval:   v.geroosterd > 0 ? (v.geroosterd - v.gegeven) / v.geroosterd : 0,
+      dominant: dominantReden(v)
+    }))
     .filter(v => v.geroosterd > 0)
     .sort((a, b) => b.uitval - a.uitval);
 }
@@ -417,13 +481,21 @@ function buildAllVakData() {
   allRows.filter(r => r.leerjaar > 0 && r.lesgroep && !isExcluded(r.vak)).forEach(r => {
     const naam = VAKKEN[r.vak] || r.vak;
     const key  = `${r.leerjaar}__${naam}`;
-    if (!map[key]) map[key] = { naam, lj: r.leerjaar, geroosterd: 0, gegeven: 0 };
+    if (!map[key]) map[key] = { naam, lj: r.leerjaar, geroosterd: 0, gegeven: 0, uitval_ll: 0, uitval_doc: 0, uitval_plan: 0, uitval_reden: 0 };
     const ws = weekStats(r, wkFrom, wkTo);
-    map[key].geroosterd += ws.geroosterd;
-    map[key].gegeven    += ws.gegeven;
+    map[key].geroosterd   += ws.geroosterd;
+    map[key].gegeven      += ws.gegeven;
+    map[key].uitval_ll    += r.uitval_ll;
+    map[key].uitval_doc   += r.uitval_doc;
+    map[key].uitval_plan  += r.uitval_plan;
+    map[key].uitval_reden += r.uitval_reden;
   });
   return Object.values(map)
-    .map(v => ({ ...v, uitval: v.geroosterd > 0 ? (v.geroosterd - v.gegeven) / v.geroosterd : 0 }))
+    .map(v => ({
+      ...v,
+      uitval:   v.geroosterd > 0 ? (v.geroosterd - v.gegeven) / v.geroosterd : 0,
+      dominant: dominantReden(v)
+    }))
     .filter(v => v.geroosterd > 5)
     .sort((a, b) => b.uitval - a.uitval)
     .slice(0, 15);
@@ -440,13 +512,18 @@ function buildLesgroepData(leerjaar, vaknaam) {
     const key = r.lesgroep || r.vak;
     if (!map[key]) map[key] = {
       lesgroep: key, geroosterd: 0, gegeven: 0,
+      uitval_ll: 0, uitval_doc: 0, uitval_plan: 0, uitval_reden: 0,
       wkGer: new Array(allWeekMeta.length).fill(0),
       wkGeg: new Array(allWeekMeta.length).fill(0)
     };
     const d = map[key];
     const ws = weekStats(r, wkFrom, wkTo);
-    d.geroosterd += ws.geroosterd;
-    d.gegeven    += ws.gegeven;
+    d.geroosterd   += ws.geroosterd;
+    d.gegeven      += ws.gegeven;
+    d.uitval_ll    += r.uitval_ll;
+    d.uitval_doc   += r.uitval_doc;
+    d.uitval_plan  += r.uitval_plan;
+    d.uitval_reden += r.uitval_reden;
     const ger_per_week = r.total_non_null > 0 ? r.raw_geroosterd / r.total_non_null : 0;
     r.weekVals.forEach((v, i) => {
       if (i >= wkFrom && i <= wkTo && v !== null) {
@@ -461,17 +538,10 @@ function buildLesgroepData(leerjaar, vaknaam) {
     .sort((a, b) => b.uitval - a.uitval);
 }
 
-// ─── Kleur helpers ───────────────────────────────────────────────────────────
-function kCls(pct, type) {
-  const p = type === 'badge' ? 'badge' : type === 'bar' ? 'bar' : 'td';
-  return pct >= 90 ? `${p}-groen` : pct >= 80 ? `${p}-oranje` : `${p}-rood`;
-}
-function bigCls(realPct) {
-  return realPct >= 90 ? 'big-groen' : realPct >= 80 ? 'big-oranje' : 'big-rood';
-}
-function tdCls(uitval) {
-  return uitval >= 0.30 ? 'td-rood' : uitval >= 0.20 ? 'td-oranje' : 'td-groen';
-}
+// ─── Kleur helpers (legacy, niet meer gebruikt voor kleuring) ─────────────────
+function kCls(pct) { return ''; }
+function bigCls(realPct) { return ''; }
+function tdCls(uitval) { return ''; }
 
 // ─── Trend chart ─────────────────────────────────────────────────────────────
 function renderTrendChart(canvasId, datasets) {
@@ -587,18 +657,19 @@ function renderOverview(dash) {
     const d = ljs[lj];
     const r  = d.geroosterd > 0 ? d.gegeven / d.geroosterd * 100 : 0;
     const u  = 100 - r;
+    const uf = u / 100;
     html += `
       <div class="card" data-lj="${lj}">
         <div class="card-header">
           <div class="card-title">Leerjaar ${lj}</div>
-          <div class="card-badge ${kCls(r,'badge')}">${r.toFixed(1)}% gegeven</div>
+          <div class="card-badge" style="background:${gradBg(uf)};color:${gradColor(uf)}">${r.toFixed(1)}% gegeven</div>
         </div>
-        <div class="${bigCls(r)} big-pct">${u.toFixed(1)}%</div>
+        <div class="big-pct" style="color:${gradColor(uf)}">${u.toFixed(1)}%</div>
         <div style="font-size:0.75rem;color:#999;margin-bottom:10px">uitval</div>
         <div class="stat-row"><span>Geroosterd</span><strong>${d.geroosterd.toLocaleString('nl')}</strong></div>
         <div class="stat-row"><span>Gegeven</span><strong>${d.gegeven.toLocaleString('nl')}</strong></div>
         <div class="stat-row"><span>Uitgevallen</span><strong>${d.uitgevallen.toLocaleString('nl')}</strong></div>
-        <div class="bar-track"><div class="bar-fill ${kCls(r,'bar')}" style="width:${r.toFixed(1)}%"></div></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${r.toFixed(1)}%;background:${gradColor(uf)}"></div></div>
         <div class="pct-label"><span>0%</span><span>100%</span></div>
         <div class="card-cta">Klik voor vakken ›</div>
       </div>`;
@@ -623,15 +694,18 @@ function renderOverview(dash) {
         <th style="text-align:right">Geroosterd</th>
         <th style="text-align:right">Gegeven</th>
         <th style="text-align:right">Uitval</th>
+        <th>Reden (jaar)</th>
       </tr></thead><tbody>`;
   vakken.forEach(v => {
     const idx = ROW_REGISTRY.length;
     ROW_REGISTRY.push({ view: 'vak', lj: v.lj, vak: v.naam });
+    const dr = v.dominant;
     html += `<tr class="clickable-row" data-row="${idx}">
       <td>${v.naam}</td><td>${v.lj}</td>
       <td style="text-align:right">${v.geroosterd}</td>
       <td style="text-align:right">${v.gegeven}</td>
-      <td style="text-align:right" class="td-pct ${tdCls(v.uitval)}">${(v.uitval*100).toFixed(1)}%</td>
+      <td style="text-align:right;font-weight:600;color:${gradColor(v.uitval)}">${(v.uitval*100).toFixed(1)}%</td>
+      <td>${dr ? `<span class="reden-badge" style="background:${dr.color}22;color:${dr.color}">${dr.label}</span>` : '<span style="color:#ddd">—</span>'}</td>
     </tr>`;
   });
   html += `</tbody></table></div>`;
@@ -639,7 +713,7 @@ function renderOverview(dash) {
   // Footer
   const totG   = ljNrs.reduce((s, lj) => s + ljs[lj].geroosterd, 0);
   const totGeg = ljNrs.reduce((s, lj) => s + ljs[lj].gegeven, 0);
-  html += `<div class="footer-note">Bron: Zermelo-export · ${allRows.filter(r=>r.leerjaar>0).length} rijen · Totaal geroosterd: ${totG.toLocaleString('nl')} · Gegeven: ${totGeg.toLocaleString('nl')}</div>`;
+  html += `<div class="footer-note">Bron: Zermelo-export · ${allRows.filter(r=>r.leerjaar>0&&r.lesgroep&&!isExcluded(r.vak)).length} rijen · Totaal geroosterd: ${totG.toLocaleString('nl')} · Gegeven: ${totGeg.toLocaleString('nl')}</div>`;
 
   dash.innerHTML = html;
 
@@ -659,6 +733,8 @@ function renderLeerjaar(dash, lj) {
   const r      = totG > 0 ? totGeg / totG * 100 : 0;
   const u      = 100 - r;
 
+  const uf = u / 100;
+
   let html = `
     <div class="view-header">
       <div class="view-title">Leerjaar ${lj}</div>
@@ -666,7 +742,7 @@ function renderLeerjaar(dash, lj) {
     </div>
     <div class="section-title">Totaal leerjaar</div>
     <div class="summary-strip">
-      <div class="sstat"><div class="sv ${bigCls(r)}">${u.toFixed(1)}%</div><div class="sl">Uitval</div></div>
+      <div class="sstat"><div class="sv" style="color:${gradColor(uf)}">${u.toFixed(1)}%</div><div class="sl">Uitval</div></div>
       <div class="sstat"><div class="sv">${r.toFixed(1)}%</div><div class="sl">Gerealiseerd</div></div>
       <div class="sstat"><div class="sv">${totG.toLocaleString('nl')}</div><div class="sl">Geroosterd</div></div>
       <div class="sstat"><div class="sv">${totGeg.toLocaleString('nl')}</div><div class="sl">Gegeven</div></div>
@@ -681,19 +757,22 @@ function renderLeerjaar(dash, lj) {
         <th style="text-align:right">Geroosterd</th>
         <th style="text-align:right">Gegeven</th>
         <th style="text-align:right">Uitval</th>
+        <th>Reden (jaar)</th>
       </tr></thead><tbody>`;
 
   if (vakken.length === 0) {
-    html += `<tr><td colspan="4" class="empty-state">Geen data voor deze periode</td></tr>`;
+    html += `<tr><td colspan="5" class="empty-state">Geen data voor deze periode</td></tr>`;
   } else {
     vakken.forEach(v => {
       const idx = ROW_REGISTRY.length;
       ROW_REGISTRY.push({ view: 'vak', lj, vak: v.naam });
+      const dr = v.dominant;
       html += `<tr class="clickable-row" data-row="${idx}">
         <td>${v.naam}</td>
         <td style="text-align:right">${v.geroosterd}</td>
         <td style="text-align:right">${v.gegeven}</td>
-        <td style="text-align:right" class="td-pct ${tdCls(v.uitval)}">${(v.uitval*100).toFixed(1)}%</td>
+        <td style="text-align:right;font-weight:600;color:${gradColor(v.uitval)}">${(v.uitval*100).toFixed(1)}%</td>
+        <td>${dr ? `<span class="reden-badge" style="background:${dr.color}22;color:${dr.color}">${dr.label}</span>` : '<span style="color:#ddd">—</span>'}</td>
       </tr>`;
     });
   }
@@ -709,6 +788,15 @@ function renderVak(dash, lj, vaknaam) {
   const totGeg = lgs.reduce((s, d) => s + d.gegeven, 0);
   const r    = totG > 0 ? totGeg / totG * 100 : 0;
   const u    = 100 - r;
+  const uf   = u / 100;
+
+  // Aggregeer uitvalredenen over alle lesgroepen (jaartotalen)
+  const redenTotals = lgs.reduce((acc, d) => ({
+    uitval_ll:    acc.uitval_ll    + d.uitval_ll,
+    uitval_doc:   acc.uitval_doc   + d.uitval_doc,
+    uitval_plan:  acc.uitval_plan  + d.uitval_plan,
+    uitval_reden: acc.uitval_reden + d.uitval_reden
+  }), { uitval_ll: 0, uitval_doc: 0, uitval_plan: 0, uitval_reden: 0 });
 
   let html = `
     <div class="view-header">
@@ -717,11 +805,17 @@ function renderVak(dash, lj, vaknaam) {
     </div>
     <div class="section-title">Totaal vak</div>
     <div class="summary-strip">
-      <div class="sstat"><div class="sv ${bigCls(r)}">${u.toFixed(1)}%</div><div class="sl">Uitval</div></div>
+      <div class="sstat"><div class="sv" style="color:${gradColor(uf)}">${u.toFixed(1)}%</div><div class="sl">Uitval</div></div>
       <div class="sstat"><div class="sv">${r.toFixed(1)}%</div><div class="sl">Gerealiseerd</div></div>
       <div class="sstat"><div class="sv">${totG.toLocaleString('nl')}</div><div class="sl">Geroosterd</div></div>
       <div class="sstat"><div class="sv">${totGeg.toLocaleString('nl')}</div><div class="sl">Gegeven</div></div>
       <div class="sstat"><div class="sv">${lgs.length}</div><div class="sl">Lesgroepen</div></div>
+    </div>`;
+
+  html += `
+    <div class="section-title">Uitvalredenen (jaartotaal)</div>
+    <div class="chart-container" style="padding:16px 20px">
+      ${renderRedenPanel(redenTotals)}
     </div>`;
 
   html += `
@@ -732,17 +826,20 @@ function renderVak(dash, lj, vaknaam) {
         <th style="text-align:right">Geroosterd</th>
         <th style="text-align:right">Gegeven</th>
         <th style="text-align:right">Uitval</th>
+        <th>Reden (jaar)</th>
       </tr></thead><tbody>`;
 
   if (lgs.length === 0) {
-    html += `<tr><td colspan="4" class="empty-state">Geen lesgroepdata beschikbaar voor dit vak</td></tr>`;
+    html += `<tr><td colspan="5" class="empty-state">Geen lesgroepdata beschikbaar voor dit vak</td></tr>`;
   } else {
     lgs.forEach(d => {
+      const dr = dominantReden(d);
       html += `<tr>
         <td><span class="lg-chip">${d.lesgroep}</span></td>
         <td style="text-align:right">${d.geroosterd}</td>
         <td style="text-align:right">${d.gegeven}</td>
-        <td style="text-align:right" class="td-pct ${tdCls(d.uitval)}">${(d.uitval*100).toFixed(1)}%</td>
+        <td style="text-align:right;font-weight:600;color:${gradColor(d.uitval)}">${(d.uitval*100).toFixed(1)}%</td>
+        <td>${dr ? `<span class="reden-badge" style="background:${dr.color}22;color:${dr.color}">${dr.label}</span>` : '<span style="color:#ddd">—</span>'}</td>
       </tr>`;
     });
   }
