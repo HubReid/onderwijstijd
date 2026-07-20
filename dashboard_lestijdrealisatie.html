@@ -373,7 +373,7 @@ function weekStats(row, from, to) {
 
 // ─── Aggregaties ─────────────────────────────────────────────────────────────
 function buildLeerjaarData() {
-  const ja = allRows.filter(r => r.leerjaar > 0 && !isExcluded(r.vak));
+  const ja = allRows.filter(r => r.leerjaar > 0 && r.lesgroep && !isExcluded(r.vak));
   const ljs = {};
   ja.forEach(r => {
     const ws = weekStats(r, wkFrom, wkTo);
@@ -399,7 +399,7 @@ function buildLeerjaarData() {
 
 function buildVakDataForLeerjaar(leerjaar) {
   const map = {};
-  allRows.filter(r => r.leerjaar === leerjaar && !isExcluded(r.vak)).forEach(r => {
+  allRows.filter(r => r.leerjaar === leerjaar && r.lesgroep && !isExcluded(r.vak)).forEach(r => {
     const naam = VAKKEN[r.vak] || r.vak;
     if (!map[naam]) map[naam] = { naam, geroosterd: 0, gegeven: 0 };
     const ws = weekStats(r, wkFrom, wkTo);
@@ -414,7 +414,7 @@ function buildVakDataForLeerjaar(leerjaar) {
 
 function buildAllVakData() {
   const map = {};
-  allRows.filter(r => r.leerjaar > 0 && !isExcluded(r.vak)).forEach(r => {
+  allRows.filter(r => r.leerjaar > 0 && r.lesgroep && !isExcluded(r.vak)).forEach(r => {
     const naam = VAKKEN[r.vak] || r.vak;
     const key  = `${r.leerjaar}__${naam}`;
     if (!map[key]) map[key] = { naam, lj: r.leerjaar, geroosterd: 0, gegeven: 0 };
