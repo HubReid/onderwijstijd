@@ -15,19 +15,64 @@
       min-height: 100vh;
     }
 
+    /* ── Header ── */
     header {
       background: #1a1a2e;
       color: white;
-      padding: 20px 32px;
+      padding: 16px 32px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    header h1 { font-size: 1.2rem; font-weight: 600; }
+    header .sub { font-size: 0.82rem; opacity: 0.6; margin-top: 2px; }
+    .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .period {
+      font-size: 0.82rem;
+      background: rgba(255,255,255,0.12);
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
     }
 
-    header h1 { font-size: 1.25rem; font-weight: 600; }
-    header .sub { font-size: 0.85rem; opacity: 0.65; margin-top: 2px; }
-    header .period { font-size: 0.85rem; background: rgba(255,255,255,0.12); padding: 4px 10px; border-radius: 20px; }
+    /* Week filter */
+    .wk-filter {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      opacity: 0.85;
+    }
+    .wk-filter select {
+      background: rgba(255,255,255,0.12);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 6px;
+      padding: 3px 6px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      max-width: 130px;
+    }
+    .wk-filter select option { background: #1a1a2e; }
 
+    /* ── Breadcrumb ── */
+    .breadcrumb-bar {
+      display: none;
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 10px 32px;
+      font-size: 0.82rem;
+      align-items: center;
+    }
+    .breadcrumb-bar.visible { display: flex; }
+    .bc-link { color: #4a6fa5; cursor: pointer; }
+    .bc-link:hover { text-decoration: underline; }
+    .bc-sep { margin: 0 8px; color: #ccc; }
+    .bc-cur { color: #1a1a2e; font-weight: 600; }
+
+    /* ── Upload zone ── */
     .upload-zone {
       display: flex;
       flex-direction: column;
@@ -36,12 +81,7 @@
       min-height: calc(100vh - 70px);
       gap: 16px;
     }
-
-    .loading-box {
-      text-align: center;
-      color: #666;
-    }
-
+    .loading-box { text-align: center; color: #666; }
     .loading-box .spinner {
       width: 36px; height: 36px;
       border: 3px solid #e5e7eb;
@@ -50,9 +90,7 @@
       animation: spin 0.8s linear infinite;
       margin: 0 auto 16px;
     }
-
     @keyframes spin { to { transform: rotate(360deg); } }
-
     .upload-box {
       border: 2px dashed #c5cad3;
       border-radius: 12px;
@@ -62,23 +100,18 @@
       cursor: pointer;
       transition: border-color 0.2s;
     }
-
     .upload-box:hover { border-color: #4a6fa5; }
     .upload-box h2 { font-size: 1rem; color: #444; margin-bottom: 8px; }
     .upload-box p { font-size: 0.85rem; color: #888; }
     .upload-box input { display: none; }
-
     .upload-btn {
       margin-top: 16px;
-      background: #1a1a2e;
-      color: white;
-      border: none;
-      padding: 10px 24px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.9rem;
+      background: #1a1a2e; color: white;
+      border: none; padding: 10px 24px;
+      border-radius: 6px; cursor: pointer; font-size: 0.9rem;
     }
 
+    /* ── Dashboard ── */
     .dashboard { display: none; padding: 24px 32px; }
 
     .section-title {
@@ -91,156 +124,108 @@
       margin-top: 28px;
     }
 
-    /* Kaarten per leerjaar */
+    /* ── Leerjaar kaarten ── */
     .cards {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 16px;
-      margin-bottom: 8px;
     }
-
     .card {
       background: white;
       border-radius: 10px;
       padding: 20px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      cursor: pointer;
+      transition: box-shadow 0.15s, transform 0.15s;
+      position: relative;
     }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 14px;
-    }
-
+    .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-2px); }
+    .card-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
     .card-title { font-size: 0.95rem; font-weight: 600; }
-    .card-badge {
-      font-size: 0.72rem;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-weight: 600;
-    }
-
-    .badge-rood    { background: #fde8e8; color: #c0392b; }
-    .badge-oranje  { background: #fef3e2; color: #d35400; }
-    .badge-groen   { background: #e8f5e9; color: #27ae60; }
-
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.8rem;
-      color: #666;
-      margin-bottom: 10px;
-    }
-
+    .card-badge { font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; }
+    .badge-rood   { background: #fde8e8; color: #c0392b; }
+    .badge-oranje { background: #fef3e2; color: #d35400; }
+    .badge-groen  { background: #e8f5e9; color: #27ae60; }
+    .stat-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: #666; margin-bottom: 8px; }
     .stat-row strong { color: #1a1a2e; }
-
-    .bar-track {
-      height: 8px;
-      background: #eef0f3;
-      border-radius: 4px;
-      overflow: hidden;
-      margin-top: 4px;
-    }
-
-    .bar-fill {
-      height: 100%;
-      border-radius: 4px;
-      transition: width 0.6s ease;
-    }
-
+    .bar-track { height: 7px; background: #eef0f3; border-radius: 4px; overflow: hidden; margin-top: 6px; }
+    .bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
     .bar-rood   { background: #e74c3c; }
     .bar-oranje { background: #e67e22; }
     .bar-groen  { background: #27ae60; }
-
-    .pct-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.72rem;
-      color: #aaa;
-      margin-top: 4px;
-    }
-
-    .big-pct {
-      font-size: 2rem;
-      font-weight: 700;
-      line-height: 1;
-      margin-bottom: 2px;
-    }
-
+    .pct-label { display: flex; justify-content: space-between; font-size: 0.7rem; color: #bbb; margin-top: 3px; }
+    .big-pct { font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 2px; }
     .big-rood   { color: #e74c3c; }
     .big-oranje { color: #e67e22; }
     .big-groen  { color: #27ae60; }
+    .card-cta { font-size: 0.7rem; color: #aaa; margin-top: 10px; text-align: right; }
 
-    /* Trend chart */
+    /* ── Chart ── */
     .chart-container {
       background: white;
       border-radius: 10px;
       padding: 20px 24px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.07);
     }
-
-    .chart-title {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #444;
-      margin-bottom: 16px;
-    }
-
+    .chart-title { font-size: 0.85rem; font-weight: 600; color: #444; margin-bottom: 16px; }
     canvas { max-height: 300px; }
 
-    /* Uitvaltabel */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.82rem;
-    }
-
+    /* ── Tabellen ── */
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
     th {
-      text-align: left;
-      padding: 8px 12px;
+      text-align: left; padding: 8px 12px;
       background: #f4f5f7;
-      font-weight: 600;
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #666;
-      border-bottom: 1px solid #e5e7eb;
+      font-weight: 600; font-size: 0.7rem;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      color: #666; border-bottom: 1px solid #e5e7eb;
     }
-
-    td {
-      padding: 9px 12px;
-      border-bottom: 1px solid #f0f0f0;
-      color: #333;
-    }
-
+    td { padding: 9px 12px; border-bottom: 1px solid #f0f0f0; color: #333; }
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #fafafa; }
-
+    tr.clickable-row { cursor: pointer; }
+    tr.clickable-row:hover td { background: #eef2ff; }
     .td-pct { font-weight: 600; }
     .td-rood   { color: #e74c3c; }
     .td-oranje { color: #e67e22; }
     .td-groen  { color: #27ae60; }
 
-    .footer-note {
-      font-size: 0.75rem;
-      color: #aaa;
-      margin-top: 24px;
-      padding-bottom: 32px;
+    /* ── Drill-down views ── */
+    .view-header { margin-bottom: 20px; }
+    .view-title { font-size: 1.1rem; font-weight: 700; }
+    .view-subtitle { font-size: 0.82rem; color: #888; margin-top: 3px; }
+
+    .summary-strip { display: flex; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
+    .sstat {
+      background: white;
+      border-radius: 10px; padding: 16px 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      text-align: center; min-width: 120px;
+    }
+    .sstat .sv { font-size: 1.7rem; font-weight: 700; line-height: 1.1; }
+    .sstat .sl { font-size: 0.72rem; color: #888; margin-top: 3px; }
+
+    /* Lesgroep chip */
+    .lg-chip {
+      display: inline-block;
+      background: #eef2ff; color: #3730a3;
+      border-radius: 4px; padding: 2px 8px;
+      font-size: 0.78rem; font-weight: 500; letter-spacing: 0.02em;
     }
 
+    /* Empty state */
+    .empty-state {
+      text-align: center; color: #aaa;
+      padding: 40px; font-size: 0.9rem;
+    }
+
+    /* Footer */
+    .footer-note { font-size: 0.75rem; color: #aaa; margin-top: 24px; padding-bottom: 32px; }
+
+    /* New file button */
     .new-file-btn {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #1a1a2e;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.8rem;
-      opacity: 0.7;
+      position: fixed; bottom: 20px; right: 20px;
+      background: #1a1a2e; color: white;
+      border: none; padding: 8px 16px;
+      border-radius: 6px; cursor: pointer; font-size: 0.8rem; opacity: 0.65;
     }
     .new-file-btn:hover { opacity: 1; }
   </style>
@@ -252,16 +237,27 @@
     <h1>Lestijdrealisatie</h1>
     <div class="sub">De Amersfoortse Berg — schooljaar 2025–2026</div>
   </div>
-  <div class="period" id="period-label">—</div>
+  <div class="header-right">
+    <div class="wk-filter" id="wk-filter">
+      <span>Van</span>
+      <select id="wk-from"></select>
+      <span>t/m</span>
+      <select id="wk-to"></select>
+    </div>
+    <div class="period" id="period-label">—</div>
+  </div>
 </header>
 
-<!-- Upload scherm -->
+<div class="breadcrumb-bar" id="breadcrumb"></div>
+
+<!-- Upload -->
 <div class="upload-zone" id="upload-zone">
   <div class="loading-box" id="loading-box">
     <div class="spinner"></div>
     <div style="font-size:0.9rem">Data laden…</div>
   </div>
-  <div class="upload-box" id="manual-upload" style="display:none" onclick="document.getElementById('csv-input').click()">
+  <div class="upload-box" id="manual-upload" style="display:none"
+       onclick="document.getElementById('csv-input').click()">
     <h2>Geen databestand gevonden</h2>
     <p>Selecteer handmatig een Zermelo-exportbestand<br>om het dashboard te laden.</p>
     <button class="upload-btn">Bestand kiezen</button>
@@ -270,63 +266,58 @@
 </div>
 
 <!-- Dashboard -->
-<div class="dashboard" id="dashboard">
+<div class="dashboard" id="dashboard"></div>
 
-  <div class="section-title">Realisatie per leerjaar</div>
-  <div class="cards" id="cards"></div>
-
-  <div class="section-title">Cumulatieve uitval per week</div>
-  <div class="chart-container">
-    <div class="chart-title">Uitvalpercentage per leerjaar — weektrend</div>
-    <canvas id="trend-chart"></canvas>
-  </div>
-
-  <div class="section-title">Uitval per vak (top 15)</div>
-  <div class="chart-container">
-    <table id="vak-table">
-      <thead>
-        <tr>
-          <th>Vak</th>
-          <th>Leerjaar</th>
-          <th style="text-align:right">Geroosterd</th>
-          <th style="text-align:right">Gegeven</th>
-          <th style="text-align:right">Uitval</th>
-        </tr>
-      </thead>
-      <tbody id="vak-tbody"></tbody>
-    </table>
-  </div>
-
-  <div class="footer-note" id="footer-note"></div>
-</div>
-
-<button class="new-file-btn" id="new-file-btn" style="display:none" onclick="document.getElementById('csv-input-dash').click()">↑ Bestand handmatig laden</button>
+<button class="new-file-btn" id="new-file-btn" style="display:none"
+        onclick="document.getElementById('csv-input-dash').click()">↑ Bestand laden</button>
 <input type="file" id="csv-input-dash" accept=".csv" style="display:none">
 
 <script>
-// ─── Vakken mapping ──────────────────────────────────────────────────────────
+// ─── Vakken ──────────────────────────────────────────────────────────────────
 const VAKKEN = {
   ak:'Aardrijkskunde', beco:'Bedrijfseconomie', bht:'Beeldend theorie',
-  bu:'Berguren', bi:'Biologie', bip:'Biologie', bialfa:'Biologie', biol:'Biologie',
-  ckv:'CKV', du:'Duits', dutl:'Duits', ec:'Economie', econ:'Economie',
-  en:'Engels', entl:'Engels', fa:'Frans', fatl:'Frans',
-  ges:'Geschiedenis', gs:'Geschiedenis', hndv:'Handvaardigheid',
+  bu:'Berguren',
+  bi:'Biologie', bip:'Biologie', bialfa:'Biologie', biol:'Biologie',
+  ckv:'CKV',
+  du:'Duits', dutl:'Duits',
+  ec:'Economie', econ:'Economie',
+  en:'Engels', entl:'Engels',
+  fa:'Frans', fatl:'Frans',
+  ges:'Geschiedenis', gs:'Geschiedenis',
+  hndv:'Handvaardigheid',
   kralg:'Keuzeruimte Alg.', krlz:'Keuzeruimte Lezen', krmrt:'Keuzeruimte MRT',
-  lo:'Lichamelijke opv.', maat:'Maatschappijleer', med:'Multimedia',
-  men:'Mentorles', mod:'Modules', mu:'Muziek', mut:'Muziek',
+  lo:'Lichamelijke opv.',
+  maat:'Maatschappijleer',
+  med:'Multimedia',
+  men:'Mentorles',
+  mod:'Modules',
+  mu:'Muziek', mut:'Muziek',
   na:'Natuurkunde', ntp:'Natuurkunde', nat:'Natuurkunde',
-  ns:'Natuur & scheikunde', nlt:'NLT',
+  ns:'Natuur & scheikunde',
+  nlt:'NLT',
   ne:'Nederlands', netl:'Nederlands',
-  pro:'Project', rt3f:'Rekenen 3F',
+  pro:'Project',
+  rt3f:'Rekenen 3F',
   schk:'Scheikunde', scp:'Scheikunde', sk:'Scheikunde',
-  st:'Startmoment', te:'Tekenen',
-  wi:'Wiskunde', wialfa:'Wiskunde', wisa:'Wiskunde A', wisb:'Wiskunde B',
+  st:'Startmoment',
+  te:'Tekenen',
+  wi:'Wiskunde', wialfa:'Wiskunde',
+  wisa:'Wiskunde A', wisb:'Wiskunde B',
   wo:'Wetenschapsoriëntatie'
 };
 
-const LJ_KLEUREN = [
-  '#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2'
-];
+const LJ_KLEUREN = ['#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2'];
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let allRows     = null;
+let allWeekMeta = null;
+let wkFrom      = 0;
+let wkTo        = 9999;
+let navState    = { view: 'overview', leerjaar: null, vak: null };
+let trendChart  = null;
+
+// Registry voor klikbare vak-rijen (vermijdt escaping problemen)
+const ROW_REGISTRY = [];
 
 // ─── CSV parsing ─────────────────────────────────────────────────────────────
 function parseCSV(text) {
@@ -334,7 +325,6 @@ function parseCSV(text) {
   const h1 = lines[0].split(';').map(s => s.replace(/"/g,'').trim());
   const h2 = lines[1].split(';').map(s => s.replace(/"/g,'').trim());
 
-  // Weekkolommen
   const weekMeta = h1.slice(18).map((jaar, i) => {
     const wk = parseInt(h2[18 + i]);
     const yr = jaar.includes('2025') ? 2025 : 2026;
@@ -345,54 +335,80 @@ function parseCSV(text) {
   for (let i = 2; i < lines.length; i++) {
     const f = lines[i].split(';').map(s => s.replace(/"/g,'').trim());
     if (f.length < 18) continue;
-    const afd = f[0]; const lj = parseInt(afd.match(/^(\d)/)?.[1]) || 0;
+    const afd = f[0];
+    const lj  = parseInt(afd.match(/^(\d)/)?.[1]) || 0;
     rows.push({
       afdeling: afd, leerjaar: lj,
       pakketgroep: f[1], vak: f[2], lesgroep: f[3],
-      geroosterd: parseInt(f[5]) || 0,
-      gegeven:    parseInt(f[9]) || 0,
-      uitgevallen: parseInt(f[16]) || 0,
-      weekVals: f.slice(18).map(v => v === '' ? null : parseInt(v) || 0)
+      weekVals: f.slice(18).map(v => v === '' ? null : (parseInt(v) || 0))
     });
   }
   return { rows, weekMeta };
 }
 
-// ─── Aggregatie ──────────────────────────────────────────────────────────────
-function buildLeerjaarData(rows, weekMeta) {
-  const ja = rows.filter(r => r.pakketgroep === 'ja' && r.leerjaar > 0);
-  const ljs = {};
+// ─── Week stats ──────────────────────────────────────────────────────────────
+function weekStats(row, from, to) {
+  let ger = 0, geg = 0, uit = 0;
+  const v = row.weekVals;
+  const end = Math.min(to, v.length - 1);
+  for (let i = Math.max(0, from); i <= end; i++) {
+    if (v[i] !== null) {
+      ger++;
+      if (v[i] > 0) geg++; else uit++;
+    }
+  }
+  return { geroosterd: ger, gegeven: geg, uitgevallen: uit };
+}
 
+// ─── Aggregaties ─────────────────────────────────────────────────────────────
+function buildLeerjaarData() {
+  const ja = allRows.filter(r => r.pakketgroep === 'ja' && r.leerjaar > 0);
+  const ljs = {};
   ja.forEach(r => {
+    const ws = weekStats(r, wkFrom, wkTo);
     if (!ljs[r.leerjaar]) ljs[r.leerjaar] = {
       geroosterd: 0, gegeven: 0, uitgevallen: 0,
-      weekGeroosterd: new Array(weekMeta.length).fill(0),
-      weekGegeven:    new Array(weekMeta.length).fill(0)
+      wkGer: new Array(allWeekMeta.length).fill(0),
+      wkGeg: new Array(allWeekMeta.length).fill(0)
     };
     const d = ljs[r.leerjaar];
-    d.geroosterd  += r.geroosterd;
-    d.gegeven     += r.gegeven;
-    d.uitgevallen += r.uitgevallen;
+    d.geroosterd  += ws.geroosterd;
+    d.gegeven     += ws.gegeven;
+    d.uitgevallen += ws.uitgevallen;
     r.weekVals.forEach((v, i) => {
-      if (v !== null) {
-        d.weekGeroosterd[i]++;      // geroosterd = niet-leeg
-        d.weekGegeven[i] += v > 0 ? 1 : 0; // gegeven = waarde > 0
+      if (i >= wkFrom && i <= wkTo && v !== null) {
+        d.wkGer[i]++;
+        d.wkGeg[i] += v > 0 ? 1 : 0;
       }
     });
   });
   return ljs;
 }
 
-function buildVakData(rows) {
-  // Per vak (canonical naam) + leerjaar
+function buildVakDataForLeerjaar(leerjaar) {
   const map = {};
-  const ja = rows.filter(r => r.pakketgroep === 'ja' && r.leerjaar > 0);
-  ja.forEach(r => {
+  allRows.filter(r => r.pakketgroep === 'ja' && r.leerjaar === leerjaar).forEach(r => {
     const naam = VAKKEN[r.vak] || r.vak;
-    const key = `${r.leerjaar}__${naam}`;
+    if (!map[naam]) map[naam] = { naam, geroosterd: 0, gegeven: 0 };
+    const ws = weekStats(r, wkFrom, wkTo);
+    map[naam].geroosterd += ws.geroosterd;
+    map[naam].gegeven    += ws.gegeven;
+  });
+  return Object.values(map)
+    .map(v => ({ ...v, uitval: v.geroosterd > 0 ? (v.geroosterd - v.gegeven) / v.geroosterd : 0 }))
+    .filter(v => v.geroosterd > 0)
+    .sort((a, b) => b.uitval - a.uitval);
+}
+
+function buildAllVakData() {
+  const map = {};
+  allRows.filter(r => r.pakketgroep === 'ja' && r.leerjaar > 0).forEach(r => {
+    const naam = VAKKEN[r.vak] || r.vak;
+    const key  = `${r.leerjaar}__${naam}`;
     if (!map[key]) map[key] = { naam, lj: r.leerjaar, geroosterd: 0, gegeven: 0 };
-    map[key].geroosterd += r.geroosterd;
-    map[key].gegeven    += r.gegeven;
+    const ws = weekStats(r, wkFrom, wkTo);
+    map[key].geroosterd += ws.geroosterd;
+    map[key].gegeven    += ws.gegeven;
   });
   return Object.values(map)
     .map(v => ({ ...v, uitval: v.geroosterd > 0 ? (v.geroosterd - v.gegeven) / v.geroosterd : 0 }))
@@ -401,97 +417,57 @@ function buildVakData(rows) {
     .slice(0, 15);
 }
 
-// ─── Kleur helpers ───────────────────────────────────────────────────────────
-function kleurKlasse(pct, type='badge') {
-  const prefix = type === 'badge' ? 'badge' : type === 'bar' ? 'bar' : 'td';
-  if (pct >= 90) return `${prefix}-groen`;
-  if (pct >= 80) return `${prefix}-oranje`;
-  return `${prefix}-rood`;
-}
-
-function bigKleur(pct) {
-  if (pct >= 90) return 'big-groen';
-  if (pct >= 80) return 'big-oranje';
-  return 'big-rood';
-}
-
-// ─── Render ──────────────────────────────────────────────────────────────────
-let trendChart = null;
-
-function render(rows, weekMeta) {
-  const ljs = buildLeerjaarData(rows, weekMeta);
-  const ljNrs = Object.keys(ljs).map(Number).sort();
-
-  // Period label
-  const geldigeWeken = weekMeta.filter((_, i) => ljNrs.some(lj => ljs[lj].weekGeroosterd[i] > 0));
-  const laatste = geldigeWeken[geldigeWeken.length - 1];
-  if (laatste) document.getElementById('period-label').textContent =
-    `t/m week ${laatste.wk} (${laatste.jaar})`;
-
-  // ── Kaarten ──
-  const cardsEl = document.getElementById('cards');
-  cardsEl.innerHTML = '';
-  ljNrs.forEach(lj => {
-    const d = ljs[lj];
-    const realPct = d.geroosterd > 0 ? (d.gegeven / d.geroosterd * 100) : 0;
-    const uitvalPct = 100 - realPct;
-    const badgeCls = kleurKlasse(realPct);
-    const barCls   = kleurKlasse(realPct, 'bar');
-    const bigCls   = bigKleur(uitvalPct < 20 ? 95 : uitvalPct < 30 ? 85 : 70);
-
-    cardsEl.innerHTML += `
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">Leerjaar ${lj}</div>
-          <div class="card-badge ${badgeCls}">${realPct.toFixed(1)}% gegeven</div>
-        </div>
-        <div class="${bigCls} big-pct">${uitvalPct.toFixed(1)}%</div>
-        <div style="font-size:0.75rem;color:#999;margin-bottom:12px">uitval</div>
-        <div class="stat-row">
-          <span>Geroosterd</span><strong>${d.geroosterd.toLocaleString('nl')}</strong>
-        </div>
-        <div class="stat-row">
-          <span>Gegeven</span><strong>${d.gegeven.toLocaleString('nl')}</strong>
-        </div>
-        <div class="stat-row">
-          <span>Uitgevallen</span><strong>${d.uitgevallen.toLocaleString('nl')}</strong>
-        </div>
-        <div class="bar-track">
-          <div class="bar-fill ${barCls}" style="width:${realPct.toFixed(1)}%"></div>
-        </div>
-        <div class="pct-label"><span>0%</span><span>100%</span></div>
-      </div>`;
-  });
-
-  // ── Trendchart: cumulatieve uitval per week ──
-  const weekLabels = weekMeta.map(w => w.label);
-
-  // Cumulatief uitvalpercentage per leerjaar per week
-  const datasets = ljNrs.map((lj, i) => {
-    const d = ljs[lj];
-    let cumGeroosterd = 0, cumGegeven = 0;
-    const punten = weekMeta.map((_, wi) => {
-      cumGeroosterd += d.weekGeroosterd[wi];
-      cumGegeven    += d.weekGegeven[wi];
-      if (cumGeroosterd === 0) return null;
-      return parseFloat(((cumGeroosterd - cumGegeven) / cumGeroosterd * 100).toFixed(2));
-    });
-    return {
-      label: `Leerjaar ${lj}`,
-      data: punten,
-      borderColor: LJ_KLEUREN[i % LJ_KLEUREN.length],
-      backgroundColor: 'transparent',
-      tension: 0.3,
-      pointRadius: 2,
-      borderWidth: 2,
-      spanGaps: true
+function buildLesgroepData(leerjaar, vaknaam) {
+  const map = {};
+  allRows.filter(r => {
+    if (r.pakketgroep !== 'nee') return false;
+    if (r.leerjaar !== leerjaar) return false;
+    return (VAKKEN[r.vak] || r.vak) === vaknaam;
+  }).forEach(r => {
+    const key = r.lesgroep || r.vak;
+    if (!map[key]) map[key] = {
+      lesgroep: key, geroosterd: 0, gegeven: 0,
+      wkGer: new Array(allWeekMeta.length).fill(0),
+      wkGeg: new Array(allWeekMeta.length).fill(0)
     };
+    const d = map[key];
+    const ws = weekStats(r, wkFrom, wkTo);
+    d.geroosterd += ws.geroosterd;
+    d.gegeven    += ws.gegeven;
+    r.weekVals.forEach((v, i) => {
+      if (i >= wkFrom && i <= wkTo && v !== null) {
+        d.wkGer[i]++;
+        d.wkGeg[i] += v > 0 ? 1 : 0;
+      }
+    });
   });
+  return Object.values(map)
+    .map(d => ({ ...d, uitval: d.geroosterd > 0 ? (d.geroosterd - d.gegeven) / d.geroosterd : 0 }))
+    .filter(d => d.geroosterd > 0)
+    .sort((a, b) => b.uitval - a.uitval);
+}
 
-  if (trendChart) trendChart.destroy();
-  trendChart = new Chart(document.getElementById('trend-chart'), {
+// ─── Kleur helpers ───────────────────────────────────────────────────────────
+function kCls(pct, type) {
+  const p = type === 'badge' ? 'badge' : type === 'bar' ? 'bar' : 'td';
+  return pct >= 90 ? `${p}-groen` : pct >= 80 ? `${p}-oranje` : `${p}-rood`;
+}
+function bigCls(realPct) {
+  return realPct >= 90 ? 'big-groen' : realPct >= 80 ? 'big-oranje' : 'big-rood';
+}
+function tdCls(uitval) {
+  return uitval >= 0.30 ? 'td-rood' : uitval >= 0.20 ? 'td-oranje' : 'td-groen';
+}
+
+// ─── Trend chart ─────────────────────────────────────────────────────────────
+function renderTrendChart(canvasId, datasets) {
+  const toIdx    = Math.min(wkTo, allWeekMeta.length - 1);
+  const labels   = allWeekMeta.slice(wkFrom, toIdx + 1).map(w => w.label);
+
+  if (trendChart) { trendChart.destroy(); trendChart = null; }
+  trendChart = new Chart(document.getElementById(canvasId), {
     type: 'line',
-    data: { labels: weekLabels, datasets },
+    data: { labels, datasets },
     options: {
       responsive: true,
       interaction: { mode: 'index', intersect: false },
@@ -511,78 +487,352 @@ function render(rows, weekMeta) {
           title: { display: true, text: 'Cumulatieve uitval (%)', font: { size: 11 } }
         },
         x: {
-          ticks: {
-            maxTicksLimit: 20,
-            maxRotation: 45,
-            font: { size: 10 }
-          },
+          ticks: { maxTicksLimit: 20, maxRotation: 45, font: { size: 10 } },
           grid: { display: false }
         }
       }
     }
   });
-
-  // ── Vakken tabel ──
-  const vakken = buildVakData(rows);
-  const tbody = document.getElementById('vak-tbody');
-  tbody.innerHTML = '';
-  vakken.forEach(v => {
-    const pct = (v.uitval * 100).toFixed(1);
-    const cls = v.uitval >= 0.30 ? 'td-rood' : v.uitval >= 0.20 ? 'td-oranje' : 'td-groen';
-    tbody.innerHTML += `<tr>
-      <td>${v.naam}</td>
-      <td>${v.lj}</td>
-      <td style="text-align:right">${v.geroosterd}</td>
-      <td style="text-align:right">${v.gegeven}</td>
-      <td style="text-align:right" class="td-pct ${cls}">${pct}%</td>
-    </tr>`;
-  });
-
-  // Footer
-  const totG = ljNrs.reduce((s, lj) => s + ljs[lj].geroosterd, 0);
-  const totGeg = ljNrs.reduce((s, lj) => s + ljs[lj].gegeven, 0);
-  document.getElementById('footer-note').textContent =
-    `Bron: Zermelo-export · ${rows.filter(r=>r.pakketgroep==='ja').length} pakketrijen · ` +
-    `Totaal geroosterd: ${totG.toLocaleString('nl')} lessen · ` +
-    `Gegeven: ${totGeg.toLocaleString('nl')} lessen`;
-
-  // Toon dashboard
-  document.getElementById('upload-zone').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
-  document.getElementById('new-file-btn').style.display = 'block';
 }
 
-// ─── Auto-load CSV via fetch ─────────────────────────────────────────────────
+function trendDatasets(items, labelKey, colorArr) {
+  const toIdx = Math.min(wkTo, allWeekMeta.length - 1);
+  return items.map((d, i) => {
+    let cumG = 0, cumGeg = 0;
+    const pts = [];
+    for (let wi = wkFrom; wi <= toIdx; wi++) {
+      cumG   += d.wkGer[wi];
+      cumGeg += d.wkGeg[wi];
+      pts.push(cumG === 0 ? null : parseFloat(((cumG - cumGeg) / cumG * 100).toFixed(2)));
+    }
+    return {
+      label: d[labelKey],
+      data: pts,
+      borderColor: colorArr[i % colorArr.length],
+      backgroundColor: 'transparent',
+      tension: 0.3, pointRadius: 2, borderWidth: 2, spanGaps: true
+    };
+  });
+}
+
+// ─── Period label ─────────────────────────────────────────────────────────────
+function updatePeriodLabel() {
+  const toIdx = Math.min(wkTo, allWeekMeta.length - 1);
+  const f = allWeekMeta[wkFrom];
+  const t = allWeekMeta[toIdx];
+  document.getElementById('period-label').textContent =
+    wkFrom === 0 && toIdx === allWeekMeta.length - 1
+      ? `t/m week ${t.wk} (${t.jaar})`
+      : `wk${String(f.wk).padStart(2,'0')} (${f.jaar}) – wk${String(t.wk).padStart(2,'0')} (${t.jaar})`;
+}
+
+// ─── Navigation ──────────────────────────────────────────────────────────────
+function navigate(view, leerjaar, vak) {
+  navState = { view, leerjaar, vak };
+  updateBreadcrumb();
+  updatePeriodLabel();
+  const dash = document.getElementById('dashboard');
+  dash.innerHTML = '';
+  if (trendChart) { trendChart.destroy(); trendChart = null; }
+  ROW_REGISTRY.length = 0;
+
+  if      (view === 'overview') renderOverview(dash);
+  else if (view === 'leerjaar') renderLeerjaar(dash, leerjaar);
+  else if (view === 'vak')      renderVak(dash, leerjaar, vak);
+}
+
+function updateBreadcrumb() {
+  const el = document.getElementById('breadcrumb');
+  if (navState.view === 'overview') {
+    el.className = 'breadcrumb-bar';
+    el.innerHTML = '';
+    return;
+  }
+  el.className = 'breadcrumb-bar visible';
+  let h = `<span class="bc-link" onclick="navigate('overview',null,null)">Overzicht</span>`;
+  if (navState.leerjaar) {
+    const lj = navState.leerjaar;
+    if (navState.view === 'leerjaar') {
+      h += `<span class="bc-sep">›</span><span class="bc-cur">Leerjaar ${lj}</span>`;
+    } else {
+      h += `<span class="bc-sep">›</span><span class="bc-link" onclick="navigate('leerjaar',${lj},null)">Leerjaar ${lj}</span>`;
+      h += `<span class="bc-sep">›</span><span class="bc-cur">${navState.vak}</span>`;
+    }
+  }
+  el.innerHTML = h;
+}
+
+// ─── Render: Overzicht ───────────────────────────────────────────────────────
+function renderOverview(dash) {
+  const ljs   = buildLeerjaarData();
+  const ljNrs = Object.keys(ljs).map(Number).sort();
+
+  // Kaarten
+  let html = `<div class="section-title">Realisatie per leerjaar</div><div class="cards">`;
+  ljNrs.forEach(lj => {
+    const d = ljs[lj];
+    const r  = d.geroosterd > 0 ? d.gegeven / d.geroosterd * 100 : 0;
+    const u  = 100 - r;
+    html += `
+      <div class="card" data-lj="${lj}">
+        <div class="card-header">
+          <div class="card-title">Leerjaar ${lj}</div>
+          <div class="card-badge ${kCls(r,'badge')}">${r.toFixed(1)}% gegeven</div>
+        </div>
+        <div class="${bigCls(r)} big-pct">${u.toFixed(1)}%</div>
+        <div style="font-size:0.75rem;color:#999;margin-bottom:10px">uitval</div>
+        <div class="stat-row"><span>Geroosterd</span><strong>${d.geroosterd.toLocaleString('nl')}</strong></div>
+        <div class="stat-row"><span>Gegeven</span><strong>${d.gegeven.toLocaleString('nl')}</strong></div>
+        <div class="stat-row"><span>Uitgevallen</span><strong>${d.uitgevallen.toLocaleString('nl')}</strong></div>
+        <div class="bar-track"><div class="bar-fill ${kCls(r,'bar')}" style="width:${r.toFixed(1)}%"></div></div>
+        <div class="pct-label"><span>0%</span><span>100%</span></div>
+        <div class="card-cta">Klik voor vakken ›</div>
+      </div>`;
+  });
+  html += `</div>`;
+
+  // Trendchart
+  html += `
+    <div class="section-title">Cumulatieve uitval per week</div>
+    <div class="chart-container">
+      <div class="chart-title">Uitvalpercentage per leerjaar — weektrend</div>
+      <canvas id="trend-chart"></canvas>
+    </div>`;
+
+  // Top 15 vakken
+  const vakken = buildAllVakData();
+  html += `
+    <div class="section-title">Uitval per vak (top 15) — klik voor lesgroep-detail</div>
+    <div class="chart-container"><table>
+      <thead><tr>
+        <th>Vak</th><th>Leerjaar</th>
+        <th style="text-align:right">Geroosterd</th>
+        <th style="text-align:right">Gegeven</th>
+        <th style="text-align:right">Uitval</th>
+      </tr></thead><tbody>`;
+  vakken.forEach(v => {
+    const idx = ROW_REGISTRY.length;
+    ROW_REGISTRY.push({ view: 'vak', lj: v.lj, vak: v.naam });
+    html += `<tr class="clickable-row" data-row="${idx}">
+      <td>${v.naam}</td><td>${v.lj}</td>
+      <td style="text-align:right">${v.geroosterd}</td>
+      <td style="text-align:right">${v.gegeven}</td>
+      <td style="text-align:right" class="td-pct ${tdCls(v.uitval)}">${(v.uitval*100).toFixed(1)}%</td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>`;
+
+  // Footer
+  const totG   = ljNrs.reduce((s, lj) => s + ljs[lj].geroosterd, 0);
+  const totGeg = ljNrs.reduce((s, lj) => s + ljs[lj].gegeven, 0);
+  html += `<div class="footer-note">Bron: Zermelo-export · ${allRows.filter(r=>r.pakketgroep==='ja').length} pakketrijen · Totaal geroosterd: ${totG.toLocaleString('nl')} · Gegeven: ${totGeg.toLocaleString('nl')}</div>`;
+
+  dash.innerHTML = html;
+
+  // Trend
+  const datasets = trendDatasets(
+    ljNrs.map(lj => ({ ...ljs[lj], leerjaar: lj })),
+    'leerjaar', LJ_KLEUREN
+  ).map((ds, i) => ({ ...ds, label: `Leerjaar ${ljNrs[i]}` }));
+  renderTrendChart('trend-chart', datasets);
+}
+
+// ─── Render: Leerjaar ────────────────────────────────────────────────────────
+function renderLeerjaar(dash, lj) {
+  const vakken = buildVakDataForLeerjaar(lj);
+  const totG   = vakken.reduce((s, v) => s + v.geroosterd, 0);
+  const totGeg = vakken.reduce((s, v) => s + v.gegeven, 0);
+  const r      = totG > 0 ? totGeg / totG * 100 : 0;
+  const u      = 100 - r;
+
+  let html = `
+    <div class="view-header">
+      <div class="view-title">Leerjaar ${lj}</div>
+      <div class="view-subtitle">Uitval per vak — klik op een vak voor lesgroep-detail</div>
+    </div>
+    <div class="section-title">Totaal leerjaar</div>
+    <div class="summary-strip">
+      <div class="sstat"><div class="sv ${bigCls(r)}">${u.toFixed(1)}%</div><div class="sl">Uitval</div></div>
+      <div class="sstat"><div class="sv">${r.toFixed(1)}%</div><div class="sl">Gerealiseerd</div></div>
+      <div class="sstat"><div class="sv">${totG.toLocaleString('nl')}</div><div class="sl">Geroosterd</div></div>
+      <div class="sstat"><div class="sv">${totGeg.toLocaleString('nl')}</div><div class="sl">Gegeven</div></div>
+      <div class="sstat"><div class="sv">${(totG-totGeg).toLocaleString('nl')}</div><div class="sl">Uitgevallen</div></div>
+    </div>`;
+
+  html += `
+    <div class="section-title">Uitval per vak</div>
+    <div class="chart-container"><table>
+      <thead><tr>
+        <th>Vak</th>
+        <th style="text-align:right">Geroosterd</th>
+        <th style="text-align:right">Gegeven</th>
+        <th style="text-align:right">Uitval</th>
+      </tr></thead><tbody>`;
+
+  if (vakken.length === 0) {
+    html += `<tr><td colspan="4" class="empty-state">Geen data voor deze periode</td></tr>`;
+  } else {
+    vakken.forEach(v => {
+      const idx = ROW_REGISTRY.length;
+      ROW_REGISTRY.push({ view: 'vak', lj, vak: v.naam });
+      html += `<tr class="clickable-row" data-row="${idx}">
+        <td>${v.naam}</td>
+        <td style="text-align:right">${v.geroosterd}</td>
+        <td style="text-align:right">${v.gegeven}</td>
+        <td style="text-align:right" class="td-pct ${tdCls(v.uitval)}">${(v.uitval*100).toFixed(1)}%</td>
+      </tr>`;
+    });
+  }
+
+  html += `</tbody></table></div>`;
+  dash.innerHTML = html;
+}
+
+// ─── Render: Vak / Lesgroepen ─────────────────────────────────────────────────
+function renderVak(dash, lj, vaknaam) {
+  const lgs  = buildLesgroepData(lj, vaknaam);
+  const totG   = lgs.reduce((s, d) => s + d.geroosterd, 0);
+  const totGeg = lgs.reduce((s, d) => s + d.gegeven, 0);
+  const r    = totG > 0 ? totGeg / totG * 100 : 0;
+  const u    = 100 - r;
+
+  let html = `
+    <div class="view-header">
+      <div class="view-title">${vaknaam} — Leerjaar ${lj}</div>
+      <div class="view-subtitle">Uitval per lesgroep</div>
+    </div>
+    <div class="section-title">Totaal vak</div>
+    <div class="summary-strip">
+      <div class="sstat"><div class="sv ${bigCls(r)}">${u.toFixed(1)}%</div><div class="sl">Uitval</div></div>
+      <div class="sstat"><div class="sv">${r.toFixed(1)}%</div><div class="sl">Gerealiseerd</div></div>
+      <div class="sstat"><div class="sv">${totG.toLocaleString('nl')}</div><div class="sl">Geroosterd</div></div>
+      <div class="sstat"><div class="sv">${totGeg.toLocaleString('nl')}</div><div class="sl">Gegeven</div></div>
+      <div class="sstat"><div class="sv">${lgs.length}</div><div class="sl">Lesgroepen</div></div>
+    </div>`;
+
+  html += `
+    <div class="section-title">Uitval per lesgroep</div>
+    <div class="chart-container"><table>
+      <thead><tr>
+        <th>Lesgroep</th>
+        <th style="text-align:right">Geroosterd</th>
+        <th style="text-align:right">Gegeven</th>
+        <th style="text-align:right">Uitval</th>
+      </tr></thead><tbody>`;
+
+  if (lgs.length === 0) {
+    html += `<tr><td colspan="4" class="empty-state">Geen lesgroepdata beschikbaar voor dit vak</td></tr>`;
+  } else {
+    lgs.forEach(d => {
+      html += `<tr>
+        <td><span class="lg-chip">${d.lesgroep}</span></td>
+        <td style="text-align:right">${d.geroosterd}</td>
+        <td style="text-align:right">${d.gegeven}</td>
+        <td style="text-align:right" class="td-pct ${tdCls(d.uitval)}">${(d.uitval*100).toFixed(1)}%</td>
+      </tr>`;
+    });
+  }
+  html += `</tbody></table></div>`;
+
+  // Weektrend per lesgroep (toon alleen als ≤ 12 lesgroepen)
+  if (lgs.length > 0 && lgs.length <= 12) {
+    html += `
+      <div class="section-title">Weektrend per lesgroep</div>
+      <div class="chart-container">
+        <div class="chart-title">${vaknaam} — cumulatieve uitval per lesgroep</div>
+        <canvas id="trend-chart"></canvas>
+      </div>`;
+  }
+
+  dash.innerHTML = html;
+
+  if (lgs.length > 0 && lgs.length <= 12) {
+    const colors = [
+      '#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2',
+      '#be185d','#065f46','#92400e','#1e3a8a','#4c1d95','#134e4a'
+    ];
+    const ds = trendDatasets(lgs, 'lesgroep', colors);
+    renderTrendChart('trend-chart', ds);
+  }
+}
+
+// ─── Week filter setup ────────────────────────────────────────────────────────
+function setupWeekFilter() {
+  const fromSel = document.getElementById('wk-from');
+  const toSel   = document.getElementById('wk-to');
+
+  allWeekMeta.forEach((w, i) => {
+    const label = `wk${String(w.wk).padStart(2,'0')} (${w.jaar})`;
+    [fromSel, toSel].forEach(sel => {
+      const o = document.createElement('option');
+      o.value = i; o.textContent = label; sel.appendChild(o);
+    });
+  });
+
+  fromSel.value = 0;
+  toSel.value   = allWeekMeta.length - 1;
+  document.getElementById('wk-filter').style.display = 'flex';
+
+  function onFilter() {
+    wkFrom = parseInt(fromSel.value);
+    wkTo   = parseInt(toSel.value);
+    if (wkFrom > wkTo) { wkTo = wkFrom; toSel.value = wkFrom; }
+    navigate(navState.view, navState.leerjaar, navState.vak);
+  }
+  fromSel.addEventListener('change', onFilter);
+  toSel.addEventListener('change',   onFilter);
+}
+
+// ─── Event delegation ─────────────────────────────────────────────────────────
+document.getElementById('dashboard').addEventListener('click', function(e) {
+  // Klikbare tabelrij
+  const row = e.target.closest('[data-row]');
+  if (row) {
+    const entry = ROW_REGISTRY[parseInt(row.dataset.row)];
+    if (entry) navigate(entry.view, entry.lj, entry.vak);
+    return;
+  }
+  // Leerjaar kaart
+  const card = e.target.closest('[data-lj]');
+  if (card) navigate('leerjaar', parseInt(card.dataset.lj), null);
+});
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+function initDashboard(text) {
+  const { rows, weekMeta } = parseCSV(text);
+  allRows     = rows;
+  allWeekMeta = weekMeta;
+  wkFrom      = 0;
+  wkTo        = weekMeta.length - 1;
+
+  setupWeekFilter();
+
+  document.getElementById('upload-zone').style.display = 'none';
+  document.getElementById('dashboard').style.display   = 'block';
+  document.getElementById('new-file-btn').style.display = 'block';
+
+  navigate('overview', null, null);
+}
+
 function loadFromFile(file) {
   const reader = new FileReader();
-  reader.onload = ev => {
-    const { rows, weekMeta } = parseCSV(ev.target.result);
-    render(rows, weekMeta);
-  };
+  reader.onload = ev => initDashboard(ev.target.result);
   reader.readAsText(file, 'UTF-8');
 }
 
 document.getElementById('csv-input').addEventListener('change', function(e) {
   if (e.target.files[0]) { loadFromFile(e.target.files[0]); this.value = ''; }
 });
-
 document.getElementById('csv-input-dash').addEventListener('change', function(e) {
   if (e.target.files[0]) { loadFromFile(e.target.files[0]); this.value = ''; }
 });
 
-// Probeer automatisch te laden bij openen
+// Auto-load
 fetch('./realisatie.csv')
-  .then(res => {
-    if (!res.ok) throw new Error('niet gevonden');
-    return res.text();
-  })
-  .then(text => {
-    const { rows, weekMeta } = parseCSV(text);
-    render(rows, weekMeta);
-  })
+  .then(res => { if (!res.ok) throw new Error(); return res.text(); })
+  .then(text => initDashboard(text))
   .catch(() => {
-    // Geen CSV in repository — toon handmatige upload
-    document.getElementById('loading-box').style.display = 'none';
+    document.getElementById('loading-box').style.display  = 'none';
     document.getElementById('manual-upload').style.display = 'block';
   });
 </script>
