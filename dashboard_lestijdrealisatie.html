@@ -338,12 +338,13 @@ function gradBg(uitvalFrac) {
   return `hsl(${hue}, 75%, 92%)`;
 }
 
-// ─── Studie helper ───────────────────────────────────────────────────────────
-function getStudie(afd) {
-  if (/^\d+h$/.test(afd))  return 'Havo';
-  if (/^\d+v$/.test(afd))  return 'VWO';
-  if (/^\d+vh$/.test(afd)) return 'Havo/VWO';
-  if (/^\d+vp$/.test(afd)) return 'VP';
+// ─── Afdeling helper ─────────────────────────────────────────────────────────
+function getAfdeling(afd) {
+  if (/^1(h|v|vh|vp)$/.test(afd)) return 'Brugklas';
+  if (/^[23]h$/.test(afd))        return 'HAVO onderbouw';
+  if (/^[23]v(p)?$/.test(afd))    return 'VWO onderbouw';
+  if (/^[45]h$/.test(afd))        return 'HAVO bovenbouw';
+  if (/^[456]v$/.test(afd))       return 'VWO bovenbouw';
   return null;
 }
 
@@ -387,8 +388,8 @@ let allRows     = null;
 let allWeekMeta = null;
 let wkFrom      = 0;
 let wkTo        = 9999;
-let navState    = { view: 'overview', leerjaar: null, vak: null, studie: null };
-let overviewMode = 'leerjaar'; // 'leerjaar' | 'studie'
+let navState    = { view: 'overview', leerjaar: null, vak: null, afdeling: null };
+let overviewMode = 'leerjaar'; // 'leerjaar' | 'afdeling'
 let trendChart  = null;
 
 // Registry voor klikbare vak-rijen (vermijdt escaping problemen)
@@ -474,19 +475,19 @@ function buildLeerjaarData() {
   return ljs;
 }
 
-function buildStudieData() {
-  const STUDIE_ORDER = ['Havo', 'VWO', 'Havo/VWO', 'VP'];
+function buildAfdelingData() {
+  const AFD_ORDER = ['Brugklas','HAVO onderbouw','VWO onderbouw','HAVO bovenbouw','VWO bovenbouw'];
   const ja = allRows.filter(r => r.leerjaar > 0 && r.lesgroep && !isExcluded(r.vak));
-  const studies = {};
+  const afds = {};
   ja.forEach(r => {
-    const studie = getStudie(r.afdeling);
-    if (!studie) return;
-    if (!studies[studie]) studies[studie] = {
-      studie, geroosterd: 0, gegeven: 0, uitgevallen: 0,
+    const afd = getAfdeling(r.afdeling);
+    if (!afd) return;
+    if (!afds[afd]) afds[afd] = {
+      afdeling: afd, geroosterd: 0, gegeven: 0, uitgevallen: 0,
       wkGer: new Array(allWeekMeta.length).fill(0),
       wkGeg: new Array(allWeekMeta.length).fill(0)
     };
-    const d = studies[studie];
+    const d = afds[afd];
     const ws = weekStats(r, wkFrom, wkTo);
     d.geroosterd  += ws.geroosterd;
     d.gegeven     += ws.gegeven;
@@ -499,12 +500,12 @@ function buildStudieData() {
       }
     });
   });
-  return STUDIE_ORDER.filter(s => studies[s]).map(s => studies[s]);
+  return AFD_ORDER.filter(a => afds[a]).map(a => afds[a]);
 }
 
-function buildLeerjaarDataForStudie(studie) {
+function buildLeerjaarDataForAfdeling(afdelingName) {
   const ja = allRows.filter(r =>
-    getStudie(r.afdeling) === studie && r.leerjaar > 0 && r.lesgroep && !isExcluded(r.vak)
+    getAfdeling(r.afdeling) === afdelingName && r.leerjaar > 0 && r.lesgroep && !isExcluded(r.vak)
   );
   const ljs = {};
   ja.forEach(r => {
@@ -518,6 +519,69 @@ function buildLeerjaarDataForStudie(studie) {
     d.uitgevallen += ws.uitgevallen;
   });
   return Object.values(ljs).sort((a, b) => a.leerjaar - b.leerjaar);
+}
+
+function buildVakDataForAfdeling(afdelingName, leerjaar) {
+  const map = {};
+  allRows.filter(r =>
+    getAfdeling(r.afdeling) === afdelingName && r.leerjaar === leerjaar &&
+    r.lesgroep && !isExcluded(r.vak)
+  ).forEach(r => {
+    const naam = VAKKEN[r.vak] || r.vak;
+    if (!map[naam]) map[naam] = { naam, lj: leerjaar, geroosterd: 0, gegeven: 0,
+      uitval_ll: 0, uitval_doc: 0, uitval_plan: 0, uitval_reden: 0 };
+    const ws = weekStats(r, wkFrom, wkTo);
+    map[naam].geroosterd   += ws.geroosterd;
+    map[naam].gegeven      += ws.gegeven;
+    map[naam].uitval_ll    += r.uitval_ll;
+    map[naam].uitval_doc   += r.uitval_doc;
+    map[naam].uitval_plan  += r.uitval_plan;
+    map[naam].uitval_reden += r.uitval_reden;
+  });
+  return Object.values(map)
+    .map(v => ({ ...v, uitval: v.geroosterd > 0 ? (v.geroosterd - v.gegeven) / v.geroosterd : 0,
+      dominant: dominantReden(v) }))
+    .filter(v => v.geroosterd > 0)
+    .sort((a, b) => b.uitval - a.uitval);
+}
+
+function buildLesgroepDataForAfdeling(afdelingName, leerjaar, vaknaam) {
+  const map = {};
+  allRows.filter(r => {
+    if (!r.lesgroep) return false;
+    if (r.leerjaar !== leerjaar) return false;
+    if (isExcluded(r.vak)) return false;
+    if (getAfdeling(r.afdeling) !== afdelingName) return false;
+    return (VAKKEN[r.vak] || r.vak) === vaknaam;
+  }).forEach(r => {
+    const key = r.lesgroep;
+    if (!map[key]) map[key] = {
+      lesgroep: key, geroosterd: 0, gegeven: 0,
+      uitval_ll: 0, uitval_doc: 0, uitval_plan: 0, uitval_reden: 0,
+      wkGer: new Array(allWeekMeta.length).fill(0),
+      wkGeg: new Array(allWeekMeta.length).fill(0)
+    };
+    const d = map[key];
+    const ws = weekStats(r, wkFrom, wkTo);
+    d.geroosterd   += ws.geroosterd;
+    d.gegeven      += ws.gegeven;
+    d.uitval_ll    += r.uitval_ll;
+    d.uitval_doc   += r.uitval_doc;
+    d.uitval_plan  += r.uitval_plan;
+    d.uitval_reden += r.uitval_reden;
+    const ger_pw = r.total_non_null > 0 ? r.raw_geroosterd / r.total_non_null : 0;
+    r.weekVals.forEach((v, i) => {
+      if (i >= wkFrom && i <= wkTo && v !== null) {
+        d.wkGer[i] += ger_pw;
+        d.wkGeg[i] += v;
+      }
+    });
+  });
+  return Object.values(map)
+    .map(v => ({ ...v, uitval: v.geroosterd > 0 ? (v.geroosterd - v.gegeven) / v.geroosterd : 0,
+      dominant: dominantReden(v) }))
+    .filter(v => v.geroosterd > 0)
+    .sort((a, b) => b.uitval - a.uitval);
 }
 
 function buildVakDataForLeerjaar(leerjaar) {
@@ -678,8 +742,8 @@ function updatePeriodLabel() {
 }
 
 // ─── Navigation ──────────────────────────────────────────────────────────────
-function navigate(view, leerjaar, vak, studie, fromStudie) {
-  navState = { view, leerjaar, vak, studie: studie || null, fromStudie: fromStudie || null };
+function navigate(view, leerjaar, vak, afdeling) {
+  navState = { view, leerjaar: leerjaar || null, vak: vak || null, afdeling: afdeling || null };
   updateBreadcrumb();
   updatePeriodLabel();
   const dash = document.getElementById('dashboard');
@@ -687,35 +751,36 @@ function navigate(view, leerjaar, vak, studie, fromStudie) {
   if (trendChart) { trendChart.destroy(); trendChart = null; }
   ROW_REGISTRY.length = 0;
 
-  if      (view === 'overview')      renderOverview(dash);
-  else if (view === 'leerjaar')      renderLeerjaar(dash, leerjaar);
-  else if (view === 'vak')           renderVak(dash, leerjaar, vak);
-  else if (view === 'studie-detail') renderStudieDetail(dash, studie || navState.studie);
+  if      (view === 'overview')        renderOverview(dash);
+  else if (view === 'leerjaar')        renderLeerjaar(dash, leerjaar);
+  else if (view === 'vak')             renderVak(dash, leerjaar, vak);
+  else if (view === 'afdeling-detail') renderAfdelingDetail(dash, afdeling);
+  else if (view === 'afdeling-lj')     renderAfdelingLeerjaar(dash, afdeling, leerjaar);
+  else if (view === 'afdeling-vak')    renderAfdelingVak(dash, afdeling, leerjaar, vak);
 }
 
 function updateBreadcrumb() {
   const el = document.getElementById('breadcrumb');
-  if (navState.view === 'overview') {
-    el.className = 'breadcrumb-bar';
-    el.innerHTML = '';
-    return;
-  }
+  if (navState.view === 'overview') { el.className = 'breadcrumb-bar'; el.innerHTML = ''; return; }
   el.className = 'breadcrumb-bar visible';
-  let h = `<span class="bc-link" onclick="navigate('overview',null,null)">Overzicht</span>`;
-  if (navState.view === 'studie-detail') {
-    h += `<span class="bc-sep">›</span><span class="bc-cur">${navState.studie}</span>`;
-  } else if (navState.leerjaar) {
-    const lj = navState.leerjaar;
-    // Studie-tussenlaag indien we vanuit studie-detail doorklikten
-    if (navState.fromStudie) {
-      h += `<span class="bc-sep">›</span><span class="bc-link" onclick="navigate('studie-detail',null,null,'${navState.fromStudie}')">${navState.fromStudie}</span>`;
-    }
-    if (navState.view === 'leerjaar') {
-      h += `<span class="bc-sep">›</span><span class="bc-cur">Leerjaar ${lj}</span>`;
-    } else {
-      h += `<span class="bc-sep">›</span><span class="bc-link" onclick="navigate('leerjaar',${lj},null,null,${navState.fromStudie?`'${navState.fromStudie}'`:'null'})">Leerjaar ${lj}</span>`;
-      h += `<span class="bc-sep">›</span><span class="bc-cur">${navState.vak}</span>`;
-    }
+  const afd = navState.afdeling;
+  const lj  = navState.leerjaar;
+  let h = `<span class="bc-link" onclick="navigate('overview',null,null,null)">Overzicht</span>`;
+
+  if (navState.view === 'afdeling-detail') {
+    h += `<span class="bc-sep">›</span><span class="bc-cur">${afd}</span>`;
+  } else if (navState.view === 'afdeling-lj') {
+    h += `<span class="bc-sep">›</span><span class="bc-link" onclick="navigate('afdeling-detail',null,null,'${afd}')">${afd}</span>`;
+    h += `<span class="bc-sep">›</span><span class="bc-cur">Leerjaar ${lj}</span>`;
+  } else if (navState.view === 'afdeling-vak') {
+    h += `<span class="bc-sep">›</span><span class="bc-link" onclick="navigate('afdeling-detail',null,null,'${afd}')">${afd}</span>`;
+    h += `<span class="bc-sep">›</span><span class="bc-link" onclick="navigate('afdeling-lj',${lj},null,'${afd}')">Leerjaar ${lj}</span>`;
+    h += `<span class="bc-sep">›</span><span class="bc-cur">${navState.vak}</span>`;
+  } else if (navState.view === 'leerjaar') {
+    h += `<span class="bc-sep">›</span><span class="bc-cur">Leerjaar ${lj}</span>`;
+  } else if (navState.view === 'vak') {
+    h += `<span class="bc-sep">›</span><span class="bc-link" onclick="navigate('leerjaar',${lj},null,null)">Leerjaar ${lj}</span>`;
+    h += `<span class="bc-sep">›</span><span class="bc-cur">${navState.vak}</span>`;
   }
   el.innerHTML = h;
 }
@@ -723,7 +788,7 @@ function updateBreadcrumb() {
 // ─── Render: Overzicht ───────────────────────────────────────────────────────
 function setOverviewMode(mode) {
   overviewMode = mode;
-  navigate('overview', null, null);
+  navigate('overview', null, null, null);
 }
 
 function renderOverview(dash) {
@@ -734,21 +799,21 @@ function renderOverview(dash) {
   let html = `
     <div class="view-toggle">
       <button class="toggle-btn${overviewMode==='leerjaar'?' active':''}" onclick="setOverviewMode('leerjaar')">Per leerjaar</button>
-      <button class="toggle-btn${overviewMode==='studie'?' active':''}" onclick="setOverviewMode('studie')">Per studie</button>
+      <button class="toggle-btn${overviewMode==='afdeling'?' active':''}" onclick="setOverviewMode('afdeling')">Per afdeling</button>
     </div>`;
 
-  if (overviewMode === 'studie') {
-    // ── Studie-kaarten ────────────────────────────────────────────────────
-    const studies = buildStudieData();
-    html += `<div class="section-title">Realisatie per studie</div><div class="cards">`;
-    studies.forEach(d => {
+  if (overviewMode === 'afdeling') {
+    // ── Afdeling-kaarten ─────────────────────────────────────────────────
+    const afdelingen = buildAfdelingData();
+    html += `<div class="section-title">Realisatie per afdeling</div><div class="cards">`;
+    afdelingen.forEach(d => {
       const r  = d.geroosterd > 0 ? d.gegeven / d.geroosterd * 100 : 0;
       const u  = 100 - r;
       const uf = u / 100;
       html += `
-        <div class="card" data-studie="${d.studie}" style="cursor:pointer" onclick="navigate('studie-detail',null,null,'${d.studie}')">
+        <div class="card" style="cursor:pointer" onclick="navigate('afdeling-detail',null,null,'${d.afdeling}')">
           <div class="card-header">
-            <div class="card-title">${d.studie}</div>
+            <div class="card-title">${d.afdeling}</div>
             <div class="card-badge" style="background:${gradBg(uf)};color:${gradColor(uf)}">${r.toFixed(1)}% gegeven</div>
           </div>
           <div class="big-pct" style="color:${gradColor(uf)}">${u.toFixed(1)}%</div>
@@ -838,9 +903,9 @@ function renderOverview(dash) {
   renderTrendChart('trend-chart', datasets);
 }
 
-// ─── Render: Studie-detail ───────────────────────────────────────────────────
-function renderStudieDetail(dash, studie) {
-  const ljs = buildLeerjaarDataForStudie(studie);
+// ─── Render: Afdeling-detail (leerjaaroverzicht) ──────────────────────────────
+function renderAfdelingDetail(dash, afd) {
+  const ljs  = buildLeerjaarDataForAfdeling(afd);
   const totG   = ljs.reduce((s, d) => s + d.geroosterd, 0);
   const totGeg = ljs.reduce((s, d) => s + d.gegeven, 0);
   const r = totG > 0 ? totGeg / totG * 100 : 0;
@@ -849,10 +914,10 @@ function renderStudieDetail(dash, studie) {
 
   let html = `
     <div class="view-header">
-      <div class="view-title">${studie}</div>
-      <div class="view-subtitle">Uitval per leerjaar</div>
+      <div class="view-title">${afd}</div>
+      <div class="view-subtitle">Uitval per leerjaar — klik voor vakken en lesgroepen</div>
     </div>
-    <div class="section-title">Totaal ${studie}</div>
+    <div class="section-title">Totaal ${afd}</div>
     <div class="summary-strip">
       <div class="sstat"><div class="sv" style="color:${gradColor(uf)}">${u.toFixed(1)}%</div><div class="sl">Uitval</div></div>
       <div class="sstat"><div class="sv">${r.toFixed(1)}%</div><div class="sl">Gerealiseerd</div></div>
@@ -860,7 +925,7 @@ function renderStudieDetail(dash, studie) {
       <div class="sstat"><div class="sv">${totGeg.toLocaleString('nl')}</div><div class="sl">Gegeven</div></div>
       <div class="sstat"><div class="sv">${(totG-totGeg).toLocaleString('nl')}</div><div class="sl">Uitgevallen</div></div>
     </div>
-    <div class="section-title">Per leerjaar — klik voor vakdetail</div>
+    <div class="section-title">Per leerjaar</div>
     <div class="chart-container"><table>
       <thead><tr>
         <th>Leerjaar</th>
@@ -876,7 +941,7 @@ function renderStudieDetail(dash, studie) {
     const dr = d.geroosterd > 0 ? d.gegeven / d.geroosterd * 100 : 0;
     const du = 100 - dr;
     const duf = du / 100;
-    html += `<tr class="clickable-row" style="cursor:pointer" onclick="navigate('leerjaar',${d.leerjaar},null,null,'${studie}')">
+    html += `<tr class="clickable-row" style="cursor:pointer" onclick="navigate('afdeling-lj',${d.leerjaar},null,'${afd}')">
       <td><strong>Leerjaar ${d.leerjaar}</strong></td>
       <td style="text-align:right">${d.geroosterd.toLocaleString('nl')}</td>
       <td style="text-align:right">${d.gegeven.toLocaleString('nl')}</td>
@@ -893,7 +958,114 @@ function renderStudieDetail(dash, studie) {
       <td style="color:#999;font-size:0.78rem;white-space:nowrap">Vakken ›</td>
     </tr>`;
   });
+  html += `</tbody></table></div>`;
+  dash.innerHTML = html;
+}
 
+// ─── Render: Afdeling → leerjaar → vakken ────────────────────────────────────
+function renderAfdelingLeerjaar(dash, afd, lj) {
+  const vakken = buildVakDataForAfdeling(afd, lj);
+  const totG   = vakken.reduce((s, v) => s + v.geroosterd, 0);
+  const totGeg = vakken.reduce((s, v) => s + v.gegeven, 0);
+  const r = totG > 0 ? totGeg / totG * 100 : 0;
+  const u = 100 - r;
+  const uf = u / 100;
+
+  let html = `
+    <div class="view-header">
+      <div class="view-title">${afd} — Leerjaar ${lj}</div>
+      <div class="view-subtitle">Uitval per vak — klik voor lesgroepen</div>
+    </div>
+    <div class="section-title">Totaal</div>
+    <div class="summary-strip">
+      <div class="sstat"><div class="sv" style="color:${gradColor(uf)}">${u.toFixed(1)}%</div><div class="sl">Uitval</div></div>
+      <div class="sstat"><div class="sv">${r.toFixed(1)}%</div><div class="sl">Gerealiseerd</div></div>
+      <div class="sstat"><div class="sv">${totG.toLocaleString('nl')}</div><div class="sl">Geroosterd</div></div>
+      <div class="sstat"><div class="sv">${totGeg.toLocaleString('nl')}</div><div class="sl">Gegeven</div></div>
+      <div class="sstat"><div class="sv">${(totG-totGeg).toLocaleString('nl')}</div><div class="sl">Uitgevallen</div></div>
+    </div>
+    <div class="section-title">Uitval per vak</div>
+    <div class="chart-container"><table>
+      <thead><tr>
+        <th>Vak</th>
+        <th style="text-align:right">Geroosterd</th>
+        <th style="text-align:right">Gegeven</th>
+        <th style="text-align:right">Uitval</th>
+        <th>Reden (jaar)</th>
+      </tr></thead><tbody>`;
+
+  vakken.forEach(v => {
+    const dr = v.dominant;
+    const afdQ = afd.replace(/'/g, "\\'");
+    const vakQ = v.naam.replace(/'/g, "\\'");
+    html += `<tr class="clickable-row" style="cursor:pointer" onclick="navigate('afdeling-vak',${lj},'${vakQ}','${afdQ}')">
+      <td>${v.naam}</td>
+      <td style="text-align:right">${v.geroosterd}</td>
+      <td style="text-align:right">${v.gegeven}</td>
+      <td style="text-align:right;font-weight:600;color:${gradColor(v.uitval)}">${(v.uitval*100).toFixed(1)}%</td>
+      <td>${dr ? `<span class="reden-badge" style="background:${dr.color}22;color:${dr.color}">${dr.label}</span>` : '<span style="color:#ddd">—</span>'}</td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>`;
+  dash.innerHTML = html;
+}
+
+// ─── Render: Afdeling → leerjaar → vak → lesgroepen ─────────────────────────
+function renderAfdelingVak(dash, afd, lj, vaknaam) {
+  const lesgroepen = buildLesgroepDataForAfdeling(afd, lj, vaknaam);
+  const totG   = lesgroepen.reduce((s, v) => s + v.geroosterd, 0);
+  const totGeg = lesgroepen.reduce((s, v) => s + v.gegeven, 0);
+  const r = totG > 0 ? totGeg / totG * 100 : 0;
+  const u = 100 - r;
+  const uf = u / 100;
+
+  let html = `
+    <div class="view-header">
+      <div class="view-title">${vaknaam}</div>
+      <div class="view-subtitle">${afd} — Leerjaar ${lj} — Uitval per lesgroep</div>
+    </div>
+    <div class="section-title">Totaal ${vaknaam}</div>
+    <div class="summary-strip">
+      <div class="sstat"><div class="sv" style="color:${gradColor(uf)}">${u.toFixed(1)}%</div><div class="sl">Uitval</div></div>
+      <div class="sstat"><div class="sv">${r.toFixed(1)}%</div><div class="sl">Gerealiseerd</div></div>
+      <div class="sstat"><div class="sv">${totG.toLocaleString('nl')}</div><div class="sl">Geroosterd</div></div>
+      <div class="sstat"><div class="sv">${totGeg.toLocaleString('nl')}</div><div class="sl">Gegeven</div></div>
+      <div class="sstat"><div class="sv">${(totG-totGeg).toLocaleString('nl')}</div><div class="sl">Uitgevallen</div></div>
+    </div>
+    <div class="section-title">Per lesgroep (klas)</div>
+    <div class="chart-container"><table>
+      <thead><tr>
+        <th>Lesgroep</th>
+        <th style="text-align:right">Geroosterd</th>
+        <th style="text-align:right">Gegeven</th>
+        <th style="text-align:right">Uitval %</th>
+        <th style="text-align:right">Realisatie %</th>
+        <th>Reden (jaar)</th>
+      </tr></thead><tbody>`;
+
+  lesgroepen.forEach(v => {
+    const dr = v.geroosterd > 0 ? v.gegeven / v.geroosterd * 100 : 0;
+    const du = 100 - dr;
+    const duf = du / 100;
+    const dom = v.dominant;
+    html += `<tr>
+      <td><strong>${v.lesgroep}</strong></td>
+      <td style="text-align:right">${v.geroosterd}</td>
+      <td style="text-align:right">${v.gegeven}</td>
+      <td style="text-align:right;font-weight:600;color:${gradColor(duf)}">${du.toFixed(1)}%</td>
+      <td style="text-align:right">
+        <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+          <div style="width:80px;height:6px;background:#eee;border-radius:3px;overflow:hidden">
+            <div style="width:${dr.toFixed(1)}%;height:100%;background:${gradColor(duf)};border-radius:3px"></div>
+          </div>
+          ${dr.toFixed(1)}%
+        </div>
+      </td>
+      <td>${dom ? `<span class="reden-badge" style="background:${dom.color}22;color:${dom.color}">${dom.label}</span>` : '<span style="color:#ddd">—</span>'}</td>
+    </tr>`;
+  });
+
+  if (lesgroepen.length === 0) html += `<tr><td colspan="6" style="text-align:center;color:#aaa">Geen lesgroepen gevonden</td></tr>`;
   html += `</tbody></table></div>`;
   dash.innerHTML = html;
 }
@@ -1061,7 +1233,7 @@ function setupWeekFilter() {
     wkFrom = parseInt(fromSel.value);
     wkTo   = parseInt(toSel.value);
     if (wkFrom > wkTo) { wkTo = wkFrom; toSel.value = wkFrom; }
-    navigate(navState.view, navState.leerjaar, navState.vak, navState.studie, navState.fromStudie);
+    navigate(navState.view, navState.leerjaar, navState.vak, navState.afdeling);
   }
   fromSel.addEventListener('change', onFilter);
   toSel.addEventListener('change',   onFilter);
@@ -1073,7 +1245,7 @@ document.getElementById('dashboard').addEventListener('click', function(e) {
   const row = e.target.closest('[data-row]');
   if (row) {
     const entry = ROW_REGISTRY[parseInt(row.dataset.row)];
-    if (entry) navigate(entry.view, entry.lj, entry.vak, null, entry.fromStudie || navState.fromStudie);
+    if (entry) navigate(entry.view, entry.lj, entry.vak, null);
     return;
   }
   // Leerjaar kaart
