@@ -242,7 +242,7 @@
 <header>
   <div>
     <h1>Lestijdrealisatie</h1>
-    <div class="sub">De Amersfoortse Berg — schooljaar 2025–2026</div>
+    <div class="sub">De Amersfoortse Berg — schooljaar 2026–2027</div>
   </div>
   <div class="header-right">
     <div class="wk-filter" id="wk-filter">
@@ -382,7 +382,8 @@ function parseCSV(text) {
 
   const weekMeta = h1.slice(18).map((jaar, i) => {
     const wk = parseInt(h2[18 + i]);
-    const yr = jaar.includes('2025') ? 2025 : 2026;
+    const yrMatch = jaar.match(/\((\d{4})\)/);
+    const yr = yrMatch ? parseInt(yrMatch[1]) : new Date().getFullYear();
     return { label: `wk${String(wk).padStart(2,'0')}`, jaar: yr, wk, idx: i };
   });
 
