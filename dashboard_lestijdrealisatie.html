@@ -678,8 +678,8 @@ function updatePeriodLabel() {
 }
 
 // ─── Navigation ──────────────────────────────────────────────────────────────
-function navigate(view, leerjaar, vak, studie) {
-  navState = { view, leerjaar, vak, studie: studie || null };
+function navigate(view, leerjaar, vak, studie, fromStudie) {
+  navState = { view, leerjaar, vak, studie: studie || null, fromStudie: fromStudie || null };
   updateBreadcrumb();
   updatePeriodLabel();
   const dash = document.getElementById('dashboard');
@@ -706,10 +706,14 @@ function updateBreadcrumb() {
     h += `<span class="bc-sep">›</span><span class="bc-cur">${navState.studie}</span>`;
   } else if (navState.leerjaar) {
     const lj = navState.leerjaar;
+    // Studie-tussenlaag indien we vanuit studie-detail doorklikten
+    if (navState.fromStudie) {
+      h += `<span class="bc-sep">›</span><span class="bc-link" onclick="navigate('studie-detail',null,null,'${navState.fromStudie}')">${navState.fromStudie}</span>`;
+    }
     if (navState.view === 'leerjaar') {
       h += `<span class="bc-sep">›</span><span class="bc-cur">Leerjaar ${lj}</span>`;
     } else {
-      h += `<span class="bc-sep">›</span><span class="bc-link" onclick="navigate('leerjaar',${lj},null)">Leerjaar ${lj}</span>`;
+      h += `<span class="bc-sep">›</span><span class="bc-link" onclick="navigate('leerjaar',${lj},null,null,${navState.fromStudie?`'${navState.fromStudie}'`:'null'})">Leerjaar ${lj}</span>`;
       h += `<span class="bc-sep">›</span><span class="bc-cur">${navState.vak}</span>`;
     }
   }
@@ -856,7 +860,7 @@ function renderStudieDetail(dash, studie) {
       <div class="sstat"><div class="sv">${totGeg.toLocaleString('nl')}</div><div class="sl">Gegeven</div></div>
       <div class="sstat"><div class="sv">${(totG-totGeg).toLocaleString('nl')}</div><div class="sl">Uitgevallen</div></div>
     </div>
-    <div class="section-title">Per leerjaar</div>
+    <div class="section-title">Per leerjaar — klik voor vakdetail</div>
     <div class="chart-container"><table>
       <thead><tr>
         <th>Leerjaar</th>
@@ -865,13 +869,14 @@ function renderStudieDetail(dash, studie) {
         <th style="text-align:right">Uitgevallen</th>
         <th style="text-align:right">Uitval %</th>
         <th style="text-align:right">Realisatie %</th>
+        <th></th>
       </tr></thead><tbody>`;
 
   ljs.forEach(d => {
     const dr = d.geroosterd > 0 ? d.gegeven / d.geroosterd * 100 : 0;
     const du = 100 - dr;
     const duf = du / 100;
-    html += `<tr>
+    html += `<tr class="clickable-row" style="cursor:pointer" onclick="navigate('leerjaar',${d.leerjaar},null,null,'${studie}')">
       <td><strong>Leerjaar ${d.leerjaar}</strong></td>
       <td style="text-align:right">${d.geroosterd.toLocaleString('nl')}</td>
       <td style="text-align:right">${d.gegeven.toLocaleString('nl')}</td>
@@ -885,6 +890,7 @@ function renderStudieDetail(dash, studie) {
           ${dr.toFixed(1)}%
         </div>
       </td>
+      <td style="color:#999;font-size:0.78rem;white-space:nowrap">Vakken ›</td>
     </tr>`;
   });
 
@@ -1055,7 +1061,7 @@ function setupWeekFilter() {
     wkFrom = parseInt(fromSel.value);
     wkTo   = parseInt(toSel.value);
     if (wkFrom > wkTo) { wkTo = wkFrom; toSel.value = wkFrom; }
-    navigate(navState.view, navState.leerjaar, navState.vak);
+    navigate(navState.view, navState.leerjaar, navState.vak, navState.studie, navState.fromStudie);
   }
   fromSel.addEventListener('change', onFilter);
   toSel.addEventListener('change',   onFilter);
@@ -1067,7 +1073,7 @@ document.getElementById('dashboard').addEventListener('click', function(e) {
   const row = e.target.closest('[data-row]');
   if (row) {
     const entry = ROW_REGISTRY[parseInt(row.dataset.row)];
-    if (entry) navigate(entry.view, entry.lj, entry.vak);
+    if (entry) navigate(entry.view, entry.lj, entry.vak, null, entry.fromStudie || navState.fromStudie);
     return;
   }
   // Leerjaar kaart
