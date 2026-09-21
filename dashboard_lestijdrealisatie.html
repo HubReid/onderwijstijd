@@ -344,12 +344,13 @@ const EXCLUDE_VAKKEN = new Set(['kralg','krlz','krmrt']);
 function isExcluded(vak) { return EXCLUDE_VAKKEN.has(vak); }
 
 // ─── Kleur gradaties (0% uitval = groen, 100% uitval = rood) ─────────────────
+// Norm: 0% uitval = groen, 25% uitval = rood (alles daarboven ook rood)
 function gradColor(uitvalFrac) {
-  const hue = Math.round(120 * (1 - Math.min(1, uitvalFrac)));
+  const hue = Math.round(120 * (1 - Math.min(1, uitvalFrac / 0.25)));
   return `hsl(${hue}, 65%, 38%)`;
 }
 function gradBg(uitvalFrac) {
-  const hue = Math.round(120 * (1 - Math.min(1, uitvalFrac)));
+  const hue = Math.round(120 * (1 - Math.min(1, uitvalFrac / 0.25)));
   return `hsl(${hue}, 75%, 92%)`;
 }
 
