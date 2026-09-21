@@ -17,7 +17,7 @@
 
     /* ── Header ── */
     header {
-      background: #1a1a2e;
+      background: #0f5431;
       color: white;
       padding: 16px 32px;
       display: flex;
@@ -55,7 +55,7 @@
       cursor: pointer;
       max-width: 130px;
     }
-    .wk-filter select option { background: #1a1a2e; }
+    .wk-filter select option { background: #0f5431; }
 
     /* ── Breadcrumb ── */
     .breadcrumb-bar {
@@ -70,7 +70,7 @@
     .bc-link { color: #4a6fa5; cursor: pointer; }
     .bc-link:hover { text-decoration: underline; }
     .bc-sep { margin: 0 8px; color: #ccc; }
-    .bc-cur { color: #1a1a2e; font-weight: 600; }
+    .bc-cur { color: #0f5431; font-weight: 600; }
 
     /* ── Upload zone ── */
     .upload-zone {
@@ -85,7 +85,7 @@
     .loading-box .spinner {
       width: 36px; height: 36px;
       border: 3px solid #e5e7eb;
-      border-top-color: #1a1a2e;
+      border-top-color: #0f5431;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
       margin: 0 auto 16px;
@@ -106,7 +106,7 @@
     .upload-box input { display: none; }
     .upload-btn {
       margin-top: 16px;
-      background: #1a1a2e; color: white;
+      background: #0f5431; color: white;
       border: none; padding: 10px 24px;
       border-radius: 6px; cursor: pointer; font-size: 0.9rem;
     }
@@ -143,21 +143,21 @@
     .card-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
     .card-title { font-size: 0.95rem; font-weight: 600; }
     .card-badge { font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; }
-    .badge-rood   { background: #fde8e8; color: #c0392b; }
+    .badge-rood   { background: #f9e0e0; color: #52100f; }
     .badge-oranje { background: #fef3e2; color: #d35400; }
-    .badge-groen  { background: #e8f5e9; color: #27ae60; }
+    .badge-groen  { background: #f2f7d6; color: #afcb37; }
     .stat-row { display: flex; justify-content: space-between; font-size: 0.8rem; color: #666; margin-bottom: 8px; }
     .stat-row strong { color: #1a1a2e; }
     .bar-track { height: 7px; background: #eef0f3; border-radius: 4px; overflow: hidden; margin-top: 6px; }
     .bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
-    .bar-rood   { background: #e74c3c; }
+    .bar-rood   { background: #52100f; }
     .bar-oranje { background: #e67e22; }
-    .bar-groen  { background: #27ae60; }
+    .bar-groen  { background: #afcb37; }
     .pct-label { display: flex; justify-content: space-between; font-size: 0.7rem; color: #bbb; margin-top: 3px; }
     .big-pct { font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 2px; }
-    .big-rood   { color: #e74c3c; }
+    .big-rood   { color: #52100f; }
     .big-oranje { color: #e67e22; }
-    .big-groen  { color: #27ae60; }
+    .big-groen  { color: #afcb37; }
     .card-cta { font-size: 0.7rem; color: #aaa; margin-top: 10px; text-align: right; }
 
     /* ── Chart ── */
@@ -184,9 +184,9 @@
     tr.clickable-row { cursor: pointer; }
     tr.clickable-row:hover td { background: #eef2ff; }
     .td-pct { font-weight: 600; }
-    .td-rood   { color: #e74c3c; }
+    .td-rood   { color: #52100f; }
     .td-oranje { color: #e67e22; }
-    .td-groen  { color: #27ae60; }
+    .td-groen  { color: #afcb37; }
 
     /* ── Drill-down views ── */
     .view-header { margin-bottom: 20px; }
@@ -235,12 +235,26 @@
       cursor: pointer; font-size: 0.8rem; color: #555;
       transition: background 0.15s, color 0.15s;
     }
-    .toggle-btn.active { background: #1a1a2e; color: white; border-color: #1a1a2e; }
+    .toggle-btn.active { background: #0f5431; color: white; border-color: #0f5431; }
+
+    /* Laatste week knop */
+    .wk-last-btn {
+      background: rgba(255,255,255,0.18);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .wk-last-btn:hover { background: rgba(255,255,255,0.28); }
 
     /* New file button */
     .new-file-btn {
       position: fixed; bottom: 20px; right: 20px;
-      background: #1a1a2e; color: white;
+      background: #0f5431; color: white;
       border: none; padding: 8px 16px;
       border-radius: 6px; cursor: pointer; font-size: 0.8rem; opacity: 0.65;
     }
@@ -261,6 +275,7 @@
       <span>t/m</span>
       <select id="wk-to"></select>
     </div>
+    <button class="wk-last-btn" id="wk-last-btn" style="display:none" onclick="selectLatestWeek()">Laatste week</button>
     <div class="period" id="period-label">—</div>
   </div>
 </header>
@@ -351,10 +366,10 @@ function getAfdeling(afd) {
 // ─── Voornaamste uitvalreden ──────────────────────────────────────────────────
 function dominantReden(d) {
   const cats = [
-    { label: 'Te weinig lln.',   color: '#d97706', val: d.uitval_ll    },
-    { label: 'Te weinig doc.',   color: '#dc2626', val: d.uitval_doc   },
-    { label: 'Gewijzigde plan.', color: '#2563eb', val: d.uitval_plan  },
-    { label: 'Zonder reden',     color: '#7c3aed', val: d.uitval_reden }
+    { label: 'Te weinig lln.',   color: '#d97706', bg: '#fef3e2', val: d.uitval_ll    },
+    { label: 'Te weinig doc.',   color: '#52100f', bg: '#e7d5ea', val: d.uitval_doc   },
+    { label: 'Gewijzigde plan.', color: '#61c3d9', bg: '#e2f4f8', val: d.uitval_plan  },
+    { label: 'Zonder reden',     color: '#7c3aed', bg: '#ede9fe', val: d.uitval_reden }
   ];
   const total = cats.reduce((s, c) => s + c.val, 0);
   if (total === 0) return null;
@@ -372,12 +387,12 @@ function renderRedenPanel(d) {
     ? `<div class="reden-segment" style="width:${pct(val)}%;background:${color}"></div>` : '';
   return `
     <div class="reden-bar">
-      ${seg(ll,'#d97706')}${seg(doc,'#dc2626')}${seg(plan,'#2563eb')}${seg(reden,'#7c3aed')}
+      ${seg(ll,'#d97706')}${seg(doc,'#52100f')}${seg(plan,'#61c3d9')}${seg(reden,'#7c3aed')}
     </div>
     <div class="reden-legend">
       <span><span class="reden-dot" style="background:#d97706"></span>Te weinig leerlingen: ${ll} (${pct(ll)}%)</span>
-      <span><span class="reden-dot" style="background:#dc2626"></span>Te weinig docenten: ${doc} (${pct(doc)}%)</span>
-      <span><span class="reden-dot" style="background:#2563eb"></span>Gewijzigde planning: ${plan} (${pct(plan)}%)</span>
+      <span><span class="reden-dot" style="background:#52100f"></span>Te weinig docenten: ${doc} (${pct(doc)}%)</span>
+      <span><span class="reden-dot" style="background:#61c3d9"></span>Gewijzigde planning: ${plan} (${pct(plan)}%)</span>
       <span><span class="reden-dot" style="background:#7c3aed"></span>Zonder reden: ${reden} (${pct(reden)}%)</span>
     </div>
     <div style="font-size:0.7rem;color:#bbb;margin-top:10px">Jaartotalen — niet beïnvloed door weekfilter</div>`;
@@ -883,7 +898,7 @@ function renderOverview(dash) {
       <td style="text-align:right">${v.geroosterd}</td>
       <td style="text-align:right">${v.gegeven}</td>
       <td style="text-align:right;font-weight:600;color:${gradColor(v.uitval)}">${(v.uitval*100).toFixed(1)}%</td>
-      <td>${dr ? `<span class="reden-badge" style="background:${dr.color}22;color:${dr.color}">${dr.label}</span>` : '<span style="color:#ddd">—</span>'}</td>
+      <td>${dr ? `<span class="reden-badge" style="background:${dr.bg};color:${dr.color}">${dr.label}</span>` : '<span style="color:#ddd">—</span>'}</td>
     </tr>`;
   });
   html += `</tbody></table></div>`;
@@ -1003,7 +1018,7 @@ function renderAfdelingLeerjaar(dash, afd, lj) {
       <td style="text-align:right">${v.geroosterd}</td>
       <td style="text-align:right">${v.gegeven}</td>
       <td style="text-align:right;font-weight:600;color:${gradColor(v.uitval)}">${(v.uitval*100).toFixed(1)}%</td>
-      <td>${dr ? `<span class="reden-badge" style="background:${dr.color}22;color:${dr.color}">${dr.label}</span>` : '<span style="color:#ddd">—</span>'}</td>
+      <td>${dr ? `<span class="reden-badge" style="background:${dr.bg};color:${dr.color}">${dr.label}</span>` : '<span style="color:#ddd">—</span>'}</td>
     </tr>`;
   });
   html += `</tbody></table></div>`;
@@ -1061,7 +1076,7 @@ function renderAfdelingVak(dash, afd, lj, vaknaam) {
           ${dr.toFixed(1)}%
         </div>
       </td>
-      <td>${dom ? `<span class="reden-badge" style="background:${dom.color}22;color:${dom.color}">${dom.label}</span>` : '<span style="color:#ddd">—</span>'}</td>
+      <td>${dom ? `<span class="reden-badge" style="background:${dom.bg};color:${dom.color}">${dom.label}</span>` : '<span style="color:#ddd">—</span>'}</td>
     </tr>`;
   });
 
@@ -1117,7 +1132,7 @@ function renderLeerjaar(dash, lj) {
         <td style="text-align:right">${v.geroosterd}</td>
         <td style="text-align:right">${v.gegeven}</td>
         <td style="text-align:right;font-weight:600;color:${gradColor(v.uitval)}">${(v.uitval*100).toFixed(1)}%</td>
-        <td>${dr ? `<span class="reden-badge" style="background:${dr.color}22;color:${dr.color}">${dr.label}</span>` : '<span style="color:#ddd">—</span>'}</td>
+        <td>${dr ? `<span class="reden-badge" style="background:${dr.bg};color:${dr.color}">${dr.label}</span>` : '<span style="color:#ddd">—</span>'}</td>
       </tr>`;
     });
   }
@@ -1184,7 +1199,7 @@ function renderVak(dash, lj, vaknaam) {
         <td style="text-align:right">${d.geroosterd}</td>
         <td style="text-align:right">${d.gegeven}</td>
         <td style="text-align:right;font-weight:600;color:${gradColor(d.uitval)}">${(d.uitval*100).toFixed(1)}%</td>
-        <td>${dr ? `<span class="reden-badge" style="background:${dr.color}22;color:${dr.color}">${dr.label}</span>` : '<span style="color:#ddd">—</span>'}</td>
+        <td>${dr ? `<span class="reden-badge" style="background:${dr.bg};color:${dr.color}">${dr.label}</span>` : '<span style="color:#ddd">—</span>'}</td>
       </tr>`;
     });
   }
@@ -1212,6 +1227,16 @@ function renderVak(dash, lj, vaknaam) {
   }
 }
 
+// ─── Selecteer laatste week ────────────────────────────────────────────────────
+function selectLatestWeek() {
+  const lastIdx = allWeekMeta.length - 1;
+  document.getElementById('wk-from').value = lastIdx;
+  document.getElementById('wk-to').value   = lastIdx;
+  wkFrom = lastIdx;
+  wkTo   = lastIdx;
+  navigate(navState.view, navState.leerjaar, navState.vak, navState.afdeling);
+}
+
 // ─── Week filter setup ────────────────────────────────────────────────────────
 function setupWeekFilter() {
   const fromSel = document.getElementById('wk-from');
@@ -1227,7 +1252,8 @@ function setupWeekFilter() {
 
   fromSel.value = 0;
   toSel.value   = allWeekMeta.length - 1;
-  document.getElementById('wk-filter').style.display = 'flex';
+  document.getElementById('wk-filter').style.display   = 'flex';
+  document.getElementById('wk-last-btn').style.display = 'inline-block';
 
   function onFilter() {
     wkFrom = parseInt(fromSel.value);
