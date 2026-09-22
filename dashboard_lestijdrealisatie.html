@@ -210,6 +210,15 @@
       border-radius: 4px; padding: 2px 8px;
       font-size: 0.78rem; font-weight: 500; letter-spacing: 0.02em;
     }
+    /* Docent chip */
+    .doc-chip {
+      display: inline-block;
+      background: #f0fdf4; color: #166534;
+      border: 1px solid #bbf7d0;
+      border-radius: 4px; padding: 1px 6px;
+      font-size: 0.70rem; font-weight: 500;
+      margin: 1px 2px 0 0;
+    }
 
     /* Empty state */
     .empty-state {
@@ -397,6 +406,15 @@ function renderRedenPanel(d) {
       <span><span class="reden-dot" style="background:#7c3aed"></span>Zonder reden: ${reden} (${pct(reden)}%)</span>
     </div>
     <div style="font-size:0.7rem;color:#bbb;margin-top:10px">Jaartotalen — niet beïnvloed door weekfilter</div>`;
+}
+
+// ─── Docent mapping (lesgroepcode → [docentcodes]) ───────────────────────────
+const DOCENT_MAP = {"1ha": ["oudf", "rens", "groa", "hubi", "busj", "wile", "voot", "klak", "heem", "ozia", "step"], "1vd": ["pits", "rens", "blam", "onil", "meju", "didb", "gilm", "engm", "klak", "bros", "diei", "krus"], "1vb": ["oudf", "doll", "blam", "onil", "meju", "didb", "dopr", "engm", "veew", "albb", "ozia", "buic", "davk"], "1vc": ["wevs", "doll", "groa", "kerm", "meju", "didb", "hamp", "fabm", "smie", "busj", "albb", "krus", "jewl"], "1bc": ["pits", "muln", "blam", "topo", "lenm", "wile", "fabm", "gelj", "buig", "wiep", "step"], "1bb": ["suis", "muln", "groa", "kerm", "lenm", "korj", "swam", "voot", "dijm", "buig", "wiep", "bros"], "1ba": ["wevs", "berh", "blam", "kerm", "busj", "swam", "korj", "voot", "dkja", "wins", "heem", "putn"], "1va": ["suis", "groa", "topo", "sctr", "dopr", "fabm", "geup", "brec", "diei", "ozia"], "bip1": ["doll"], "ns1": ["blam"], "pro1": ["beem", "blam", "coof", "groa", "damm"], "2ha": ["oudf", "muln", "bara", "hubi", "didb", "meju", "wile", "burj", "klak", "wiep", "albb", "coof", "muid"], "2hb": ["pits", "muln", "terl", "hubi", "lenm", "swam", "korj", "dije", "geup", "albb", "ozia", "sche", "jewl"], "2hc": ["oudf", "doll", "blam", "bara", "topo", "lenm", "wile", "dije", "gelj", "diei", "merr", "putn"], "2hd": ["suis", "berh", "jouc", "wens", "dije", "oudf", "doll", "blam", "swam", "gelj", "terl", "rudg", "bura", "reef", "wati", "dijm", "burj", "damm", "diei", "merr", "putn"], "2vd": ["pits", "doll", "piso", "onil", "sctr", "hamp", "dije", "veew", "buig", "wens", "losm", "bros"], "2vb": ["oudf", "rens", "piso", "onil", "didb", "meju", "swam", "korj", "wati", "dkja", "burj", "albb", "reik", "groa", "muid"], "2vc": ["suis", "doll", "stra", "kerm", "didb", "meju", "korj", "swam", "wati", "klak", "burj", "albb", "merr", "losm", "davk"], "2ve": ["oudf", "rens", "terl", "onil", "sctr", "hamp", "dije", "geup", "buig", "krus", "jouc", "step"], "2va": ["pits", "jouc", "piso", "rudg", "sctr", "wile", "burj", "dijm", "krus", "buig", "putn"], "ntp1": ["losm"], "3hc": ["suis", "doll", "jouc", "brui", "liid", "onil", "kwaa", "hamp", "burj", "gelj", "putn", "heem", "wiep", "damm"], "3hb": ["pits", "muln", "brui", "liid", "rudg", "kwaa", "spec", "buic", "engm", "klak", "heem", "groa", "wiep", "beem", "jewl"], "3ha": ["oudf", "berh", "brui", "liid", "rudg", "lenm", "swam", "burj", "geup", "albb", "groa", "ozia", "beem", "jewl"], "3vc": ["oudf", "muln", "damm", "terl", "liid", "onil", "kwaa", "spec", "burj", "smie", "reik", "albb", "blam", "beem", "looj"], "3vd": ["pits", "berh", "terl", "liid", "rudg", "sctr", "swam", "burj", "veew", "albb", "jouc", "merr", "damm", "brec"], "3ve": ["oudf", "berh", "terl", "liid", "rudg", "kwaa", "spec", "burj", "engm", "geum", "beem", "heem", "blam", "wins", "bros"], "3vb": ["oudf", "doll", "bara", "abej", "topo", "sctr", "reef", "burj", "gelj", "losm", "heem", "loum", "bros"], "3va": ["suis", "rens", "bara", "dupe", "onil", "lenm", "reef", "engm", "geum", "albb", "loum", "bros"], "na2": ["losm"], "na1": ["groa"], "scp1": ["damm"], "sk2": ["beem"], "sk1": ["beem"], "ak1": ["falu", "wevs"], "ak2": ["wevs", "falu"], "beco1": ["flim", "dupe"], "bht1": ["fabm", "voot"], "biol2": ["vosy", "kone", "muir", "berb"], "biol1": ["muir", "berh", "berb", "kone"], "ckv1": ["buig", "heem"], "ckv3": ["voot", "buig"], "ckv2": ["fabm", "heem"], "dutl1": ["brui", "jonl"], "econ2": ["liid", "dupe", "abej"], "econ1": ["dupe", "liid", "abej"], "4hc": ["kroy", "geum", "loum"], "4ha": ["sloh", "smie", "holl", "reic"], "4hb": ["sloh", "dkja", "reic", "holl"], "fatl1": ["kwaa", "bura"], "ges1": ["gilm", "hamp", "reef"], "ges2": ["spec", "houk", "dopr"], "lo2": ["dkja", "smie", "geum", "veew"], "lo1": ["smie", "klak"], "lo3": ["geum", "gelj"], "maat1": ["even"], "maat2": ["even", "reef"], "maat3": ["even"], "mu1": ["albb", "heem", "diei"], "mut1": ["albb", "buig", "heem", "diei"], "nat1": ["coof", "sche"], "rt3f1": ["step"], "schk2": ["hetf", "damm", "veea"], "schk1": ["damm", "beem", "veea", "hetf"], "wisa2": ["reie", "gija", "kuip", "looj"], "wisa1": ["brec", "kuip", "reie", "looj"], "wisa3": ["muid", "looj", "kuip", "gija"], "wisb1": ["muid", "gija", "reie", "kuip", "looj"], "ckv4": ["loum", "engm"], "dutl3": ["stra", "jonl"], "dutl2": ["stra", "brui"], "4vd": ["kroy", "reef", "ricd"], "4vc": ["topo", "even", "loum"], "4va": ["boei", "stra", "ricd"], "4vb": ["gorn", "wens", "kone"], "fatl2": ["bura"], "lo4": ["dijm"], "maat4": ["reef"], "nat2": ["coof", "sche"], "nlt1": ["kone", "gija", "sche", "falu", "coof"], "wisb2": ["reie", "looj", "kuip"], "entl1": ["kroy", "boei"], "entl2": ["kroy", "gorn"], "entl3": ["sloh"], "entl4": ["sloh"], "men5": ["hetf", "looj"], "men4": ["hamp", "gorn"], "men7": ["kuip", "veea"], "men2": ["coof", "dopr"], "men1": ["brui", "bral"], "men3": ["falu", "dupe"], "men6": ["kroy", "reie"], "5hb": ["deul"], "5hc": ["wens"], "5ha": ["reic"], "5hd": ["bral"], "biol3": ["kone", "vosy", "berb"], "5vd": ["gorn", "deul"], "5vb": ["boei", "ricd"], "5vc": ["gorn", "gelj", "loum"], "5va": ["boei", "abej", "ricd"], "schk3": ["veea"], "wo4": ["hamp"], "wo1": ["hamp"], "wo3": ["spec"], "wo2": ["spec"], "beco2": ["flim"], "men8": ["wevs"], "nat3": ["coof"], "netl2": ["reic"], "netl1": ["wens"], "netl3": ["deul"], "netl4": ["bral"]};
+
+function getDocenten(lesgroepCode) {
+  // lesgroepCode is like "1h.1ha" — extract part after the dot
+  const key = lesgroepCode.includes('.') ? lesgroepCode.split('.').pop() : lesgroepCode;
+  return DOCENT_MAP[key] || [];
 }
 
 // ─── State ───────────────────────────────────────────────────────────────────
@@ -1065,7 +1083,7 @@ function renderAfdelingVak(dash, afd, lj, vaknaam) {
     const duf = du / 100;
     const dom = v.dominant;
     html += `<tr>
-      <td><strong>${v.lesgroep}</strong></td>
+      <td><strong>${v.lesgroep}</strong><br>${getDocenten(v.lesgroep).map(d=>`<span class="doc-chip">${d}</span>`).join('')}</td>
       <td style="text-align:right">${v.geroosterd}</td>
       <td style="text-align:right">${v.gegeven}</td>
       <td style="text-align:right;font-weight:600;color:${gradColor(duf)}">${du.toFixed(1)}%</td>
