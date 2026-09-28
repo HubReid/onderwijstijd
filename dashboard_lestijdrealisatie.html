@@ -415,7 +415,8 @@ function getDocenten(lesgroepCode, vak) {
   // lesgroepCode is like "1h.1ha" — extract part after the dot
   const lesgroep = lesgroepCode.includes('.') ? lesgroepCode.split('.').pop() : lesgroepCode;
   const vakKey = (vak || '').toLowerCase();
-  return DOCENT_MAP[vakKey + '|' + lesgroep] || [];
+  const docenten = DOCENT_MAP[vakKey + '|' + lesgroep] || [];
+  return [...new Set(docenten)];
 }
 
 // ─── State ───────────────────────────────────────────────────────────────────
@@ -1261,6 +1262,9 @@ function selectLatestWeek() {
 function setupWeekFilter() {
   const fromSel = document.getElementById('wk-from');
   const toSel   = document.getElementById('wk-to');
+
+  fromSel.innerHTML = '';
+  toSel.innerHTML   = '';
 
   allWeekMeta.forEach((w, i) => {
     const label = `wk${String(w.wk).padStart(2,'0')} (${w.jaar})`;
